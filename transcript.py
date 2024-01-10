@@ -5,9 +5,7 @@ from langchain_community.document_loaders import YoutubeLoader
 
 @dataclass
 class Metadata:
-    """
-    Represents the metadata of a transcript.
-    """
+    """Represents the metadata of a transcript."""
 
     title: str
     publish_date: str
@@ -15,9 +13,7 @@ class Metadata:
     url: str
 
     def print(self) -> None:
-        """
-        Prints the metadata information.
-        """
+        """Prints the metadata information."""
         print(f"Title: {self.title}")
         print(f"Publish Date: {self.publish_date}")
         print(f"Author: {self.author}")
@@ -26,9 +22,7 @@ class Metadata:
 
 @dataclass
 class Transcript:
-    """
-    Represents a transcript.
-    """
+    """Represents a transcript."""
 
     content: str
     metadata: Metadata
