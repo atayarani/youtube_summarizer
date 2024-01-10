@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from langchain_community.document_loaders import YoutubeLoader
 
 
@@ -14,6 +15,7 @@ class Metadata:
         print(f"Publish Date: {self.publish_date}")
         print(f"Author: {self.author}")
         print(f"URL: {self.url}")
+
 
 @dataclass
 class Transcript:
@@ -32,5 +34,3 @@ class Transcript:
         )
 
         return cls(content=output.page_content, metadata=metadata)
-    
-

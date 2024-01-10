@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-from transcript import Transcript
-from ai import AI
 import click
+
+from ai import AI
+from transcript import Transcript
 
 
 @click.command()
@@ -17,7 +18,7 @@ def main(url: str):
     2. Initializes an AI object with the transcript content.
     3. Prints the AI's output.
     4. Prints the metadata of the transcript.
-    
+
     Args:
         url (str): The URL of the YouTube video.
     """
