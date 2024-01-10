@@ -23,9 +23,11 @@ class AI:
         self.messages = [
             SystemMessage(
                 content=(
-                    "The user will provide a transcript. You will provide two documents as output. "
-                    "The first is a list of key takeaways from the video. The second document is "
-                    "the transcript reformatted into an in-depth markdown blog post using sections "
+                    "The user will provide a transcript. "
+                    "You will provide two documents as output. "
+                    "The first is a list of key takeaways from the video. "
+                    "The second document is the transcript reformatted "
+                    "into an in-depth markdown blog post using sections "
                     "and section headers."
                 )
             ),
