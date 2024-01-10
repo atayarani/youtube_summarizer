@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-from transcript import Transcript
-from ai import AI
 import click
+
+from ai import AI
+from transcript import Transcript
 
 
 @click.command()
