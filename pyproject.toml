@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "youtube-summarizer"
+version = "0.1.0"
+description = ""
+authors = ["Ali <619512+atayarani@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+langchain = "^0.1.0"
+youtube-transcript-api = "^0.6.2"
+langchain-openai = "^0.0.2"
+pytube = "^15.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
