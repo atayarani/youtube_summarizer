@@ -17,7 +17,7 @@ def main(url: str):
     2. Initializes an AI object with the transcript content.
     3. Prints the AI's output.
     4. Prints the metadata of the transcript.
-    
+
     Args:
         url (str): The URL of the YouTube video.
     """

@@ -32,5 +32,5 @@ class Transcript:
         )
 
         return cls(content=output.page_content, metadata=metadata)
-    
+
 
