@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+import sys
+
 import click
 
 from src.ai import AI
@@ -11,7 +13,30 @@ from src.transcript import Transcript
     prompt="The URL of the YouTube video.",
     help="The URL of the YouTube video.",
 )
-def main(url: str):
+@click.option(
+    "--transcript-only",
+    is_flag=True,
+    help="Print the transcript without further processing",
+    default=False,
+)
+@click.option(
+    "--takeaways/--no-takeaways",
+    help="Whether or not to include key takeaways in the output",
+    default=True,
+)
+@click.option(
+    "--article/--no-article",
+    help="Whether or not to include an article form of the transcript in the ouput",
+    default=True,
+)
+@click.option(
+    "--metadata/--no-metadata",
+    help="Whether or not to include video metadata in the ouput",
+    default=True,
+)
+def main(
+    url: str, transcript_only: bool, takeaways: bool, article: bool, metadata: bool
+):
     """
     This function takes a URL as input and performs the following steps:
     1. Retrieves the transcript for the given URL.
@@ -23,9 +48,18 @@ def main(url: str):
         url (str): The URL of the YouTube video.
     """
     transcript = Transcript.get_transcript(url)
-    ai = AI(transcript.content)
-    ai.print()
-    transcript.metadata.print()
+    if transcript_only:
+        print(transcript.content)
+        sys.exit(0)
+
+    ai = AI(transcript)
+
+    if takeaways:
+        ai.print_takeaways()
+    if article:
+        ai.print_summary()
+    if metadata:
+        transcript.metadata.print()
 
 
 if __name__ == "__main__":
