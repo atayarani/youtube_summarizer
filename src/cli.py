@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import click
+import sys
 
 from src.ai import AI
 from src.transcript import Transcript
@@ -29,7 +30,7 @@ def main(url: str, transcript_only: bool, takeaways: bool, article: bool, metada
     transcript = Transcript.get_transcript(url)
     if transcript_only:
       print(transcript.content)
-      exit(0)
+      sys.exit(0)
 
     ai = AI(transcript)
 
