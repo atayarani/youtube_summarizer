@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "youtube-summarizer"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Ali <619512+atayarani@users.noreply.github.com>"]
 readme = "README.md"
