@@ -3,7 +3,6 @@ import click
 
 from src.ai import AI
 from src.transcript import Transcript
-from sys import exit
 
 
 @click.command()
