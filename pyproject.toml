@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "youtube-summarizer"
-version = "0.1.0"
+version = "0.3.0"
 description = ""
 authors = ["Ali <619512+atayarani@users.noreply.github.com>"]
 readme = "README.md"
@@ -18,7 +18,7 @@ classifiers = [
 license = "MIT"
 
 [tool.poetry.scripts]
-summarizer = "src.cli:main"
+summarize = "src.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -27,6 +27,12 @@ youtube-transcript-api = "^0.6.2"
 langchain-openai = "^0.0.2"
 pytube = "^15.0.0"
 click = "^8.1.7"
+python-slugify = "^8.0.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+black = {extras = ["d"], version = "^23.12.1"}
+isort = "^5.13.2"
 
 [build-system]
 requires = ["poetry-core"]

@@ -12,12 +12,14 @@ class Metadata:
     author: str
     url: str
 
-    def print(self) -> None:
+    def print(self) -> str:
         """Prints the metadata information."""
-        print(f"Title: {self.title}")
-        print(f"Publish Date: {self.publish_date}")
-        print(f"Author: {self.author}")
-        print(f"URL: {self.url}")
+        return (
+            f"Title: {self.title}\n"
+            f"Publish Date: {self.publish_date}\n"
+            f"Author: {self.author}\n"
+            f"URL: {self.url}\n"
+        )
 
 
 @dataclass
@@ -44,7 +46,7 @@ class Transcript:
             title=output.metadata["title"],
             publish_date=output.metadata["publish_date"],
             author=output.metadata["author"],
-            url=url,
+            url=url.split("&")[0],
         )
 
         return cls(content=output.page_content, metadata=metadata)

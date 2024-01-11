@@ -1,0 +1,16 @@
+{
+  "packages": [
+    "python310@latest",
+    "poetry@latest"
+  ],
+  "shell": {
+    "init_hook": [
+      "poetry install && poetry shell"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
