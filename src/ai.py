@@ -28,8 +28,9 @@ class AI:
         messages = [
           SystemMessage(content=(
                   "The user will provide a transcript."
-                  "From the transcript, you will provide a bulleted list of key takeaways. "
-                  f"At the top of the list, add a title: '# Key Takeaways — {self.metadata.title}'")),
+                  "From the transcript, you will provide a bulleted list of "
+                  "key takeaways. At the top of the list, add a title: "
+                  f"'# Key Takeaways — {self.metadata.title}'")),
           HumanMessage(content=self.transcript),
         ]
         for chunk in chat.stream(messages):
