@@ -16,7 +16,6 @@ cache:
 before_script:
   - python --version ; pip --version  # For debugging
   - pip install poetry
-  - poetry shell
 # test:
 #   script:
 #     - pip install ruff tox  # you can also use tox
