@@ -22,7 +22,7 @@ class AI:
         """
         self.transcript = transcript.content
         self.metadata = transcript.metadata
- 
+
     def print_takeaways(self) -> None:
         chat = ChatOpenAI(temperature=0)
         messages = [
