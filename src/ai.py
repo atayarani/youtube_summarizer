@@ -1,3 +1,6 @@
+import os
+
+from langchain.text_splitter import CharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
@@ -12,11 +15,14 @@ class AI:
     """
 
     def __init__(self, transcript: Transcript) -> None:
-        """
-        Initializes an instance of the class.
+        """Initializes an instance of the AI class.
 
         Args:
-            transcript (str): The transcript of the video.
+            transcript (Transcript): The transcript object containing
+                the content and metadata.
+
+        Raises:
+            KeyError: If the OPENAI_API_KEY environment variable is not set.
 
         Returns:
             None
@@ -24,23 +30,15 @@ class AI:
         self.transcript = transcript.content
         self.metadata = transcript.metadata
 
-    def print_takeaways(self) -> None:
-        """
-        Prints the key takeaways from the transcript provided by the user.
+        if "OPENAI_API_KEY" not in os.environ:
+            raise KeyError("OPENAI_API_KEY environment variable not set.")
 
-        The method uses the ChatOpenAI class to generate a bulleted list of key
-        takeaways from the transcript. It starts by adding a title to the list,
-        which is formatted as '# Key Takeaways — {self.metadata.title}'. Then,
-        it adds the transcript as a HumanMessage to the list of messages.
-        Finally, it iterates over the messages using the chat.stream() method
-        and prints each chunk of content.
-
-        Note: The transcript should be set before calling this method.
+    def takeaways(self) -> list:
+        """Returns the key takeaways from the transcript provided by the user.
 
         Returns:
-            None
+            list: A list of key takeaways.
         """
-        chat = ChatOpenAI(temperature=0)
         messages = [
             SystemMessage(
                 content=(
@@ -52,35 +50,73 @@ class AI:
             ),
             HumanMessage(content=self.transcript),
         ]
-        for chunk in chat.stream(messages):
-            print(chunk.content, end="", flush=True)
-        print()
-        print("---")
 
-    def print_summary(self) -> None:
-        """
-        Prints a summary of the transcript as a markdown blog post.
+        return self._chat(temperature=0.0, messages=messages)
 
-        The summary is generated using the ChatOpenAI model with a temperature of 1.
-        The transcript is copy edited for clarity, accuracy, and basic errors.
-        The reformatted transcript is then printed as an in-depth markdown blog post
-        with sections and section headers. The title of the blog post is based on
-        the metadata's title attribute.
+    def summary(self) -> list:
+        """Generates a summary of the transcript by reformatting it into an
+        in-depth markdown blog post using sections and section headers.
+
+        Returns:
+            A list of strings representing the generated summary.
         """
-        chat = ChatOpenAI(temperature=1)
-        messages = [
-            SystemMessage(
-                content=(
-                    "The user will provide a transcript.Copy edit the transcript "
-                    "for clarity, accuracy, and basic errors. "
-                    "reformat the transcript  into an in-depth "
-                    "markdown blog post using sections and section headers."
-                    f"The title of the blog post will be {self.metadata.title}."
+        output = []
+
+        for transcript in self._split_transcript():
+            messages = [
+                SystemMessage(
+                    content=(
+                        "The user will provide a transcript."
+                        "reformat the transcript  into an in-depth "
+                        "markdown blog post using sections and section headers."
+                        f"The title of the blog post will be {self.metadata.title}."
+                    )
+                ),
+                HumanMessage(content=transcript),
+            ]
+
+            output.append(
+                "".join(
+                    self._chat(
+                        temperature=1.0, messages=messages, model="gpt-3.5-turbo-16k"
+                    )
                 )
-            ),
-            HumanMessage(content=self.transcript),
-        ]
-        for chunk in chat.stream(messages):
-            print(chunk.content, end="", flush=True)
-        print()
-        print("---")
+            )
+
+        return output
+
+    @staticmethod
+    def _chat(
+        model: str = "gpt-3.5-turbo",
+        temperature: float = 0.0,
+        messages: list = None,
+    ) -> list:
+        """Perform a chat conversation using the specified model and messages.
+
+        Args:
+            model (str): The model to use for the chat conversation.
+                Defaults to "gpt-3.5-turbo".
+            temperature (float): The temperature parameter for generating
+                responses. Defaults to 0.0.
+            messages (list): The list of messages in the conversation.
+                Must be specified.
+
+        Returns:
+            list: The list of generated responses.
+        """
+        if messages is None:
+            raise ValueError("messages must be specified.")
+        chat = ChatOpenAI(temperature=temperature, model=model)
+
+        return [chunk.content for chunk in chat.stream(messages)]
+
+    def _split_transcript(self) -> list:
+        """Split the transcript into chunks using a character-based text splitter.
+
+        Returns:
+            A list of transcript chunks.
+        """
+        transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
+            chunk_size=2000, chunk_overlap=0
+        )
+        return transcript_splitter.split_text(self.transcript)

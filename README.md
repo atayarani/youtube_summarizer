@@ -14,24 +14,17 @@ The YouTube Summarizer is a tool that allows users to summarize the content of Y
 
 ## Installation
 
-1. Clone the repository:
-
-    ```bash
-    git clone https://github.com/your-username/youtube_summarizer.git
-    ```
-
-2. Install the required dependencies:
-
-    ```bash
-    poetry install
-    ```
+1. Install the package:
+```bash
+pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/youtube_summarizer/pypi/simple
+```
 
 ## Usage
 
 1. Run the application:
 
     ```bash
-    python cli.py
+    summarize
     ```
 
 2. Enter the URL of the YouTube video you want to summarize.

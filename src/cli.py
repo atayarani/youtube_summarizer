@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+import os
 import sys
 
 import click
+import slugify
 
 from src.ai import AI
 from src.transcript import Transcript
@@ -34,32 +36,59 @@ from src.transcript import Transcript
     help="Whether or not to include video metadata in the ouput",
     default=True,
 )
+@click.option(
+    "--write", is_flag=True, help="whether or not to write a file", default=False
+)
 def main(
-    url: str, transcript_only: bool, takeaways: bool, article: bool, metadata: bool
-):
+    url: str,
+    transcript_only: bool,
+    takeaways: bool,
+    article: bool,
+    metadata: bool,
+    write: bool,
+) -> None:
     """
-    This function takes a URL as input and performs the following steps:
-    1. Retrieves the transcript for the given URL.
-    2. Initializes an AI object with the transcript content.
-    3. Prints the AI's output.
-    4. Prints the metadata of the transcript.
+    Main function that processes the command line arguments and
+    generates the desired output.
 
     Args:
         url (str): The URL of the YouTube video.
+        transcript_only (bool): Flag indicating whether to output only the transcript.
+        takeaways (bool): Flag indicating whether to output the takeaways.
+        article (bool): Flag indicating whether to output the article summary.
+        metadata (bool): Flag indicating whether to output the video metadata.
+        write (bool): Flag indicating whether to write the output to a file.
+
+    Returns:
+        None
     """
     transcript = Transcript.get_transcript(url)
+    output = []
+    if write:
+        filename = f"{slugify.slugify(transcript.metadata.title)}.md"
+        if os.path.isfile(filename):
+            raise FileExistsError(f"{filename} already exists")
+        sys.stdout = open(filename, "a")
+
     if transcript_only:
-        print(transcript.content)
-        sys.exit(0)
+        output.append(transcript.content)
+        takeaways = False
+        article = False
+        metadata = False
 
-    ai = AI(transcript)
+    if any([takeaways, article]):
+        ai = AI(transcript)
 
-    if takeaways:
-        ai.print_takeaways()
     if article:
-        ai.print_summary()
+        output.append("".join(ai.summary()))
+        output.append("\n---\n")
+    if takeaways:
+        output.append("".join((ai.takeaways())))
+        output.append("\n---\n")
     if metadata:
-        transcript.metadata.print()
+        output.append(transcript.metadata.print())
+
+    print("".join(output))
 
 
 if __name__ == "__main__":
