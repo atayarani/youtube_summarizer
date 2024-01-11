@@ -28,11 +28,12 @@ class AI:
         """
         Prints the key takeaways from the transcript provided by the user.
 
-        The method uses the ChatOpenAI class to generate a bulleted list of key takeaways
-        from the transcript. It starts by adding a title to the list, which is formatted as
-        '# Key Takeaways — {self.metadata.title}'. Then, it adds the transcript as a
-        HumanMessage to the list of messages. Finally, it iterates over the messages using
-        the chat.stream() method and prints each chunk of content.
+        The method uses the ChatOpenAI class to generate a bulleted list of key 
+        takeaways from the transcript. It starts by adding a title to the list,
+        which is formatted as '# Key Takeaways — {self.metadata.title}'. Then,
+        it adds the transcript as a HumanMessage to the list of messages. 
+        Finally, it iterates over the messages using the chat.stream() method 
+        and prints each chunk of content.
 
         Note: The transcript should be set before calling this method.
 
