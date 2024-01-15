@@ -1,16 +1,26 @@
-from dataclasses import dataclass
-
+import attrs
+from attrs import field, frozen
 from langchain_community.document_loaders import YoutubeLoader
 
 
-@dataclass
+@frozen
 class Metadata:
     """Represents the metadata of a transcript."""
 
-    title: str
-    publish_date: str
-    author: str
-    url: str
+    title: str = field(factory=str)
+    publish_date: str = field(factory=str, metadata={"format": "%Y-%m-%d"})
+    author: str = field(factory=str)
+    url: str = field(factory=str)
+
+    def __attrs_post_init__(self):
+        """Post-initialization validation."""
+        for key, value in attrs.asdict(self).items():
+            if not value:
+                raise ValueError(f"{key} cannot be empty.")
+            if not isinstance(value, str):
+                raise TypeError(f"{key} must be a string.")
+            if len(value) == "":
+                raise ValueError(f"{key} cannot be empty.")
 
     def print(self) -> str:
         """Prints the metadata information."""
@@ -22,12 +32,12 @@ class Metadata:
         )
 
 
-@dataclass
+@frozen
 class Transcript:
     """Represents a transcript."""
 
-    content: str
-    metadata: Metadata
+    content: str = field(factory=str)
+    metadata: Metadata = field(factory=Metadata)
 
     @classmethod
     def get_transcript(cls, url: str) -> "Transcript":
@@ -40,8 +50,16 @@ class Transcript:
         Returns:
             Transcript: The retrieved transcript.
         """
+        if not url.startswith("https://www.youtube.com/watch?v="):
+            raise ValueError("Invalid YouTube URL")
+        if not url:
+            raise ValueError("URL cannot be empty")
+
         loader = YoutubeLoader.from_youtube_url(url, add_video_info=True)
-        output = loader.load()[0]
+        output = loader.load()
+        if not output:
+            raise Exception("No transcript available.")
+        output = output[0]
         metadata = Metadata(
             title=output.metadata["title"],
             publish_date=output.metadata["publish_date"],

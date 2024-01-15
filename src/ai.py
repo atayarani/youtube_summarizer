@@ -4,6 +4,7 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
+from src.exceptions import InvalidTranscript
 from src.transcript import Transcript
 
 
@@ -29,6 +30,9 @@ class AI:
         """
         self.transcript = transcript.content
         self.metadata = transcript.metadata
+
+        if self.transcript is None or self.transcript == "":
+            raise InvalidTranscript()
 
         if "OPENAI_API_KEY" not in os.environ:
             raise KeyError("OPENAI_API_KEY environment variable not set.")
@@ -119,4 +123,5 @@ class AI:
         transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=2000, chunk_overlap=0
         )
+
         return transcript_splitter.split_text(self.transcript)
