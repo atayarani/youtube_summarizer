@@ -46,7 +46,7 @@ class Transcript:
             title=output.metadata["title"],
             publish_date=output.metadata["publish_date"],
             author=output.metadata["author"],
-            url=url,
+            url=url.split("&")[0],
         )
 
         return cls(content=output.page_content, metadata=metadata)

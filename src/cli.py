@@ -81,10 +81,10 @@ def main(
 
     if article:
         output.append("".join(ai.summary()))
-        output.append("\n---\n")
+        output.append("\n\n---\n\n")
     if takeaways:
         output.append("".join((ai.takeaways())))
-        output.append("\n---\n")
+        output.append("\n\n---\n\n")
     if metadata:
         output.append(transcript.metadata.print())
 
