@@ -1,5 +1,7 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/43056a39f0dc01e73314/test_coverage)](https://codeclimate.com/github/atayarani/youtube_summarizer/test_coverage)
 
+[![Maintainability](https://api.codeclimate.com/v1/badges/43056a39f0dc01e73314/maintainability)](https://codeclimate.com/github/atayarani/youtube_summarizer/maintainability)
+
 # YouTube Summarizer
 
 This is a codebase for a YouTube summarizer application.
