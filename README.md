@@ -1,5 +1,3 @@
-[![codecov](https://codecov.io/gh/atayarani/youtube_summarizer/graph/badge.svg?token=0lsdQ5FapO)](https://codecov.io/gh/atayarani/youtube_summarizer)
-
 # YouTube Summarizer
 
 This is a codebase for a YouTube summarizer application.

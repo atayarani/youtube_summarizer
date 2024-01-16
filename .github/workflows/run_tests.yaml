@@ -33,9 +33,12 @@ jobs:
         run: poetry install
       - name: Run the automated tests (for example)
         run: poetry run coverage run -m pytest -v -s
-      - name: Generate Coverage Report
-        run: poetry run coverage xml
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+      - name: Code Climate Coverage Action
+        uses: paambaati/codeclimate-action@v5.0.0
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageCommand: "poetry run coverage xml"
+          files: "coverage.xml"
+          coverageLocations: |
+            ${{github.workspace}}/coverage.xml:coverage.py
