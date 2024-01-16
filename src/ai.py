@@ -43,19 +43,22 @@ class AI:
         Returns:
             list: A list of key takeaways.
         """
-        messages = [
-            SystemMessage(
-                content=(
-                    "The user will provide a transcript."
-                    "From the transcript, you will provide a bulleted list of "
-                    "key takeaways. At the top of the list, add a title: "
-                    f"'# Key Takeaways — {self.metadata.title}'"
-                )
-            ),
-            HumanMessage(content=self.transcript),
-        ]
+        output = []
+        for transcript in self._split_transcript():
+            messages = [
+                SystemMessage(
+                    content=(
+                        "The user will provide a transcript."
+                        "From the transcript, you will provide a bulleted list of "
+                        "key takeaways. At the top of the list, add a title: "
+                        f"'# Key Takeaways — {self.metadata.title}'"
+                    )
+                ),
+                HumanMessage(content=self.transcript),
+            ]
+            output.append("".join(self._chat(temperature=1.0, messages=messages)))
 
-        return self._chat(temperature=0.0, messages=messages)
+        return output
 
     def summary(self) -> list:
         """Generates a summary of the transcript by reformatting it into an
@@ -79,19 +82,13 @@ class AI:
                 HumanMessage(content=transcript),
             ]
 
-            output.append(
-                "".join(
-                    self._chat(
-                        temperature=1.0, messages=messages, model="gpt-3.5-turbo-16k"
-                    )
-                )
-            )
+            output.append("".join(self._chat(temperature=1.0, messages=messages)))
 
         return output
 
     @staticmethod
     def _chat(
-        model: str = "gpt-3.5-turbo",
+        model: str = "gpt-3.5-turbo-16k",
         temperature: float = 0.0,
         messages: list = None,
     ) -> list:
@@ -121,7 +118,7 @@ class AI:
             A list of transcript chunks.
         """
         transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=2000, chunk_overlap=0
+            chunk_size=10000, chunk_overlap=0
         )
 
         return transcript_splitter.split_text(self.transcript)
