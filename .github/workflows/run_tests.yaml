@@ -39,6 +39,5 @@ jobs:
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
         with:
           coverageCommand: "poetry run coverage xml"
-          files: "coverage.xml"
           coverageLocations: |
             ${{github.workspace}}/coverage.xml:coverage.py
