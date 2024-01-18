@@ -50,7 +50,7 @@ class Transcript:
         Returns:
             Transcript: The retrieved transcript.
         """
-        if not url.startswith("https://www.youtube.com/watch?v="):
+        if not Transcript.check_url(url):
             raise ValueError("Invalid YouTube URL")
         if not url:
             raise ValueError("URL cannot be empty")
@@ -68,3 +68,22 @@ class Transcript:
         )
 
         return cls(content=output.page_content, metadata=metadata)
+
+    @staticmethod
+    def check_url(url: str) -> bool:
+        """
+        Check if the given URL is a valid YouTube video URL.
+
+        Args:
+            url (str): The URL to be checked.
+
+        Returns:
+            bool: True if the URL is a valid YouTube video URL, False otherwise.
+        """
+        return any(
+            url.startswith(prefix)
+            for prefix in [
+                "https://www.youtube.com/watch?v=",
+                "https://www.youtube.com/shorts",
+            ]
+        )
