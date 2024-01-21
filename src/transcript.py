@@ -84,6 +84,8 @@ class Transcript:
             output = output[0]
         except NoTranscriptFound:
             output = cls._generate_transcript(url)
+        except IndexError:
+            raise ValueError("No transcript available")
 
         try:
             metadata = Metadata(
