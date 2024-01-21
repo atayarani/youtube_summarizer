@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import os
 import sys
+import os.path
 
 import click
 import slugify
@@ -39,6 +39,12 @@ from src.transcript import Transcript
 @click.option(
     "--write", is_flag=True, help="whether or not to write a file", default=False
 )
+@click.option(
+    "--path",
+    prompt="The path to write the file to.",
+    help="The path to write the file to.",
+    default="."
+)
 def main(
     url: str,
     transcript_only: bool,
@@ -46,26 +52,28 @@ def main(
     article: bool,
     metadata: bool,
     write: bool,
+    path: str
 ) -> None:
     """
-    Main function that processes the command line arguments and
-    generates the desired output.
+    Main function to process YouTube video and generate summary.
 
     Args:
         url (str): The URL of the YouTube video.
         transcript_only (bool): Flag indicating whether to output only the transcript.
-        takeaways (bool): Flag indicating whether to output the takeaways.
-        article (bool): Flag indicating whether to output the article summary.
-        metadata (bool): Flag indicating whether to output the video metadata.
+        takeaways (bool): Flag indicating whether to generate takeaways from the video.
+        article (bool): Flag indicating whether to generate an article summary.
+        metadata (bool): Flag indicating whether to print video metadata.
         write (bool): Flag indicating whether to write the output to a file.
+        path (str): The path to write the output file.
 
     Returns:
         None
     """
+
     transcript = Transcript.get_transcript(url)
     output = []
     if write:
-        filename = f"{slugify.slugify(transcript.metadata.title)}.md"
+        filename = os.path.join(path, f"{slugify.slugify(transcript.metadata.title)}.md")
         if os.path.isfile(filename):
             raise FileExistsError(f"{filename} already exists")
         sys.stdout = open(filename, "a")
