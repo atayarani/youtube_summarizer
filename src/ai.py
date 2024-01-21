@@ -97,7 +97,7 @@ class AI:
 
         Args:
             model (str): The model to use for the chat conversation.
-                Defaults to "gpt-3.5-turbo".
+                Defaults to "gpt-3.5-turbo-16k".
             temperature (float): The temperature parameter for generating
                 responses. Defaults to 0.0.
             messages (list): The list of messages in the conversation.

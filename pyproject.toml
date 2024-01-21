@@ -29,6 +29,9 @@ pytube = "^15.0.0"
 click = "^8.1.7"
 python-slugify = "^8.0.1"
 attrs = "^23.2.0"
+yt-dlp = "^2023.12.30"
+pydub = "^0.25.1"
+assemblyai = "^0.20.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"

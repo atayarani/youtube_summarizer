@@ -1,6 +1,13 @@
+import tempfile
+
 import attrs
-from attrs import field, frozen
-from langchain_community.document_loaders import YoutubeLoader
+from attrs import define, field, frozen
+from langchain_community.document_loaders import (
+    AssemblyAIAudioTranscriptLoader,
+    YoutubeLoader,
+)
+from pytube import YouTube
+from youtube_transcript_api._errors import NoTranscriptFound
 
 
 @frozen
@@ -32,6 +39,20 @@ class Metadata:
         )
 
 
+@define
+class AssemblyTranscription:
+    """
+    Represents an Assembly AI transcription.
+
+    Attributes:
+        page_content (str): The content of the transcription page.
+        metadata (dict): Additional metadata associated with the transcription.
+    """
+
+    page_content: str = field(factory=str)
+    metadata: dict = field(factory=dict)
+
+
 @frozen
 class Transcript:
     """Represents a transcript."""
@@ -55,17 +76,24 @@ class Transcript:
         if not url:
             raise ValueError("URL cannot be empty")
         url = url.split("&")[0]
-        loader = YoutubeLoader.from_youtube_url(url, add_video_info=True)
-        output = loader.load()
-        if not output:
-            raise Exception("No transcript available.")
-        output = output[0]
-        metadata = Metadata(
-            title=output.metadata["title"],
-            publish_date=output.metadata["publish_date"],
-            author=output.metadata["author"],
-            url=url.split("&")[0],
+        loader = YoutubeLoader.from_youtube_url(
+            url, add_video_info=True, language=["en", "en-US"]
         )
+        try:
+            output = loader.load()
+            output = output[0]
+        except NoTranscriptFound:
+            output = cls._generate_transcript(url)
+
+        try:
+            metadata = Metadata(
+                title=output.metadata["title"],
+                publish_date=output.metadata["publish_date"],
+                author=output.metadata["author"],
+                url=url.split("&")[0],
+            )
+        except Exception:
+            print(output.metadata)
 
         return cls(content=output.page_content, metadata=metadata)
 
@@ -86,4 +114,31 @@ class Transcript:
                 "https://www.youtube.com/watch?v=",
                 "https://www.youtube.com/shorts",
             ]
+        )
+
+    @classmethod
+    def _generate_transcript(cls, url: str) -> AssemblyTranscription:
+        """
+        Generate a transcript for a YouTube video given its URL.
+
+        Args:
+            url (str): The URL of the YouTube video.
+
+        Returns:
+            AssemblyTranscription: The generated transcript along with metadata.
+        """
+        yt = YouTube(url)
+        audio = yt.streams.filter(only_audio=True).first()
+        metadata = {
+            "title": yt.title,
+            "publish_date": yt.publish_date.strftime("%Y-%m-%d"),
+            "author": yt.author,
+        }
+
+        with tempfile.TemporaryDirectory() as save_dir:
+            audio_file = audio.download(output_path=save_dir)
+            loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)
+            docs = loader.load()
+        return AssemblyTranscription(
+            page_content=docs[0].page_content, metadata=metadata
         )
