@@ -3,10 +3,10 @@ import os
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
+from functools import cache
 
 from src.exceptions import InvalidTranscript
 from src.transcript import Transcript
-
 
 class AI:
     """
@@ -111,6 +111,7 @@ class AI:
 
         return [chunk.content for chunk in chat.stream(messages)]
 
+    @cache
     def _split_transcript(self) -> list:
         """Split the transcript into chunks using a character-based text splitter.
 
