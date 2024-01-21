@@ -54,7 +54,7 @@ class Transcript:
             raise ValueError("Invalid YouTube URL")
         if not url:
             raise ValueError("URL cannot be empty")
-
+        url = url.split("&")[0]
         loader = YoutubeLoader.from_youtube_url(url, add_video_info=True)
         output = loader.load()
         if not output:
