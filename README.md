@@ -40,5 +40,3 @@ pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/you
 ## License
 
 This project is licensed under the [MIT License](LICENSE.md).
-
-

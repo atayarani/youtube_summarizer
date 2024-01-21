@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import sys
 import os.path
+import sys
 
 import click
 import slugify
@@ -43,7 +43,7 @@ from src.transcript import Transcript
     "--path",
     prompt="The path to write the file to.",
     help="The path to write the file to.",
-    default="."
+    default=".",
 )
 def main(
     url: str,
@@ -52,7 +52,7 @@ def main(
     article: bool,
     metadata: bool,
     write: bool,
-    path: str
+    path: str,
 ) -> None:
     """
     Main function to process YouTube video and generate summary.
@@ -73,7 +73,9 @@ def main(
     transcript = Transcript.get_transcript(url)
     output = []
     if write:
-        filename = os.path.join(path, f"{slugify.slugify(transcript.metadata.title)}.md")
+        filename = os.path.join(
+            path, f"{slugify.slugify(transcript.metadata.title)}.md"
+        )
         if os.path.isfile(filename):
             raise FileExistsError(f"{filename} already exists")
         sys.stdout = open(filename, "a")

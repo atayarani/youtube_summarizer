@@ -28,6 +28,7 @@ class MockMetadata:
 
 import pytest
 
+
 class TestTakeaways:
     # Raises a ValueError when messages is None.
     def test_raises_value_error_when_messages_is_none(self, mocker):
@@ -108,7 +109,7 @@ class TestTakeaways:
         assert isinstance(result, list)
 
         # Assert that the result contains the expected key takeaways
-        assert result == ['Key takeaway 1Key takeaway 2']
+        assert result == ["Key takeaway 1Key takeaway 2"]
 
 
 class Test_SplitTranscript:

@@ -1,12 +1,13 @@
 import os
+from functools import cache
 
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
-from functools import cache
 
 from src.exceptions import InvalidTranscript
 from src.transcript import Transcript
+
 
 class AI:
     """
