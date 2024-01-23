@@ -1,0 +1,44 @@
+# This config was automatically generated from your source code
+# Stacks detected: cicd:github-actions:.github/workflows,deps:python:.,package_manager:poetry:.
+version: 2.1
+orbs:
+  python: circleci/python@2
+jobs:
+  test-python:
+    parameters:
+      python-version:
+        type: string
+    # Install dependencies and run tests
+    executor: 
+      name: python/default
+      tag: << parameters.python-version >>
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: poetry
+      - run:
+          name: CodeClimate before-build
+          command: |
+            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+            chmod +x ./cc-test-reporter
+            ./cc-test-reporter before-build
+      - run:
+          name: Run tests
+          command: poetry run pytest --cov=./ --cov-report xml -v 
+      - run:
+          name: CodeClimate combine and upload coverage
+          command: |
+            # Format the various coverage reports
+            ./cc-test-reporter format-coverage -t coverage.py -o coverage/codeclimate.python.json coverage/python/coverage.xml
+            # Combine the test coverage reports
+            ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
+            # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
+            ./cc-test-reporter upload-coverage || true
+workflows:
+  test:
+    jobs:
+      - test-python:
+          matrix:
+            parameters:
+              python-version: ["3.10","3.11","3.12"]
+
