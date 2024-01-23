@@ -1,0 +1,33 @@
+pipeline:
+  identifier: Build_atayarani_youtube_summarizer_1705985783859
+  name: Build youtube_summarizer
+  orgIdentifier: default
+  projectIdentifier: default_project
+  properties:
+    ci:
+      codebase:
+        build: <+input>
+        connectorRef: account.Github_OAuth_1705985744401
+        repoName: atayarani/youtube_summarizer
+  stages:
+    - stage:
+        identifier: build
+        name: build
+        spec:
+          cloneCodebase: true
+          execution:
+            steps:
+              - step:
+                  identifier: echo
+                  name: echo
+                  spec:
+                    command: echo hello world
+                  timeout: ""
+                  type: Run
+          platform:
+            arch: Amd64
+            os: Linux
+          runtime:
+            spec: {}
+            type: Cloud
+        type: CI
