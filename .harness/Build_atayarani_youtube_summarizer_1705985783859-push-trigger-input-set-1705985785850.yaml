@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_atayarani_youtube_summarizer_1705985783859-push-trigger-input-set
+  identifier: Build_atayarani_youtube_summarizer_1705985783859pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_atayarani_youtube_summarizer_1705985783859
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
