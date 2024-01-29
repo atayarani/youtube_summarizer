@@ -1,12 +1,11 @@
 import os
-from functools import cache
 
-from langchain.text_splitter import CharacterTextSplitter
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
-from src.exceptions import InvalidTranscript
+from src.metadata import Metadata
 from src.transcript import Transcript
+from src.youtube_data import YouTubeData
 
 
 class AI:
@@ -16,83 +15,61 @@ class AI:
     on the conversation.
     """
 
-    def __init__(self, transcript: Transcript) -> None:
+    def __init__(self, transcript: Transcript, youtube_data: YouTubeData) -> None:
         """Initializes an instance of the AI class.
 
         Args:
             transcript (Transcript): The transcript object containing
                 the content and metadata.
-
-        Raises:
-            KeyError: If the OPENAI_API_KEY environment variable is not set.
+            youtube_data (YouTubeData): The YouTubeData object containing
+                the metadata of the YouTube video.
 
         Returns:
             None
         """
-        self.transcript = transcript.content
-        self.metadata = transcript.metadata
+        self.transcript_chunks: list[str] = transcript.split()
+        self.metadata: Metadata = youtube_data.metadata
 
-        if self.transcript is None or self.transcript == "":
-            raise InvalidTranscript()
-
-        if "OPENAI_API_KEY" not in os.environ:
-            raise KeyError("OPENAI_API_KEY environment variable not set.")
-
-    def takeaways(self) -> list:
+    def takeaways(self) -> str:
         """Returns the key takeaways from the transcript provided by the user.
 
         Returns:
             list: A list of key takeaways.
         """
-        output = []
-        for transcript in self._split_transcript():
-            messages = [
-                SystemMessage(
-                    content=(
-                        "The user will provide a transcript."
-                        "From the transcript, you will provide a bulleted list of "
-                        "key takeaways. At the top of the list, add a title: "
-                        f"'# Key Takeaways — {self.metadata.title}'"
-                    )
-                ),
-                HumanMessage(content=self.transcript),
-            ]
-            output.append("".join(self._chat(temperature=1.0, messages=messages)))
 
-        return output
+        content = (
+            "The user will provide a transcript.From the transcript, you will provide a bulleted list of "
+            f"key takeaways. At the top of the list, add a title: '# Key Takeaways — {self.metadata.title}'"
+        )
 
-    def summary(self) -> list:
+        return self._chat(
+            system_message=SystemMessage(content=content), temperature=1.0
+        )
+
+    def summary(self) -> str:
         """Generates a summary of the transcript by reformatting it into an
         in-depth markdown blog post using sections and section headers.
 
         Returns:
             A list of strings representing the generated summary.
         """
-        output = []
 
-        for transcript in self._split_transcript():
-            messages = [
-                SystemMessage(
-                    content=(
-                        "The user will provide a transcript."
-                        "reformat the transcript  into an in-depth "
-                        "markdown blog post using sections and section headers."
-                        f"The title of the blog post will be {self.metadata.title}."
-                    )
-                ),
-                HumanMessage(content=transcript),
-            ]
+        content = (
+            "The user will provide a transcript. Reformat the transcript into an in-depth "
+            "markdown blog post using sections and section headers. The title of the blog "
+            f"post will be {self.metadata.title}."
+        )
 
-            output.append("".join(self._chat(temperature=1.0, messages=messages)))
+        return self._chat(
+            system_message=SystemMessage(content=content), temperature=1.0
+        )
 
-        return output
-
-    @staticmethod
     def _chat(
+        self,
+        system_message: SystemMessage,
         model: str = "gpt-3.5-turbo-16k",
         temperature: float = 0.0,
-        messages: list = None,
-    ) -> list:
+    ) -> str:
         """Perform a chat conversation using the specified model and messages.
 
         Args:
@@ -106,21 +83,29 @@ class AI:
         Returns:
             list: The list of generated responses.
         """
-        if messages is None:
+        if system_message is None:
             raise ValueError("messages must be specified.")
-        chat = ChatOpenAI(temperature=temperature, model=model)
+        if system_message.content == "" or system_message.content is None:
+            raise ValueError("system_message.content must be specified.")
 
-        return [chunk.content for chunk in chat.stream(messages)]
+        output = []
 
-    @cache
-    def _split_transcript(self) -> list:
-        """Split the transcript into chunks using a character-based text splitter.
+        if not self.check_openai_api_key():
+            raise self.OpenAIKeyNotFoundError
 
-        Returns:
-            A list of transcript chunks.
-        """
-        transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=10000, chunk_overlap=0
-        )
+        for transcript in self.transcript_chunks:
+            messages = [system_message, HumanMessage(content=transcript)]
+            chat = ChatOpenAI(temperature=temperature, model=model)
+            output.append("".join([chunk.content for chunk in chat.stream(messages)]))  # type: ignore
 
-        return transcript_splitter.split_text(self.transcript)
+        return output[0]
+
+    def check_openai_api_key(self) -> bool:
+        return "OPENAI_API_KEY" in os.environ
+
+    class OpenAIKeyNotFoundError(Exception):
+        """Raised when the OPENAI_API_KEY environment variable is not found."""
+
+        def __init__(self) -> None:
+            """Initializes the OpenAIKeyNotFoundError exception."""
+            super().__init__("OPENAI_API_KEY environment variable not set.")

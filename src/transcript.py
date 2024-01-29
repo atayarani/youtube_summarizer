@@ -1,125 +1,45 @@
 import tempfile
+from functools import lru_cache
 
-import attrs
-from attrs import define, field, frozen
-from langchain_community.document_loaders import (
-    AssemblyAIAudioTranscriptLoader,
-    YoutubeLoader,
-)
-from pytube import YouTube
+from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import AssemblyAIAudioTranscriptLoader
+from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import NoTranscriptFound
 
-
-@frozen
-class Metadata:
-    """Represents the metadata of a transcript."""
-
-    title: str = field(factory=str)
-    publish_date: str = field(factory=str, metadata={"format": "%Y-%m-%d"})
-    author: str = field(factory=str)
-    url: str = field(factory=str)
-
-    def __attrs_post_init__(self):
-        """Post-initialization validation."""
-        for key, value in attrs.asdict(self).items():
-            if not value:
-                raise ValueError(f"{key} cannot be empty.")
-            if not isinstance(value, str):
-                raise TypeError(f"{key} must be a string.")
-            if len(value) == "":
-                raise ValueError(f"{key} cannot be empty.")
-
-    def print(self) -> str:
-        """Prints the metadata information."""
-        return (
-            f"Title: {self.title}\n"
-            f"Publish Date: {self.publish_date}\n"
-            f"Author: {self.author}\n"
-            f"URL: {self.url}\n"
-        )
+from src.youtube_data import YouTubeData
 
 
-@define
-class AssemblyTranscription:
-    """
-    Represents an Assembly AI transcription.
-
-    Attributes:
-        page_content (str): The content of the transcription page.
-        metadata (dict): Additional metadata associated with the transcription.
-    """
-
-    page_content: str = field(factory=str)
-    metadata: dict = field(factory=dict)
-
-
-@frozen
 class Transcript:
-    """Represents a transcript."""
+    def __init__(self, youtube_data: YouTubeData):
+        self.content = self.get_transcript(youtube_data)
 
-    content: str = field(factory=str)
-    metadata: Metadata = field(factory=Metadata)
-
-    @classmethod
-    def get_transcript(cls, url: str) -> "Transcript":
-        """
-        Retrieves a transcript from the given URL.
-
-        Args:
-            url (str): The URL of the transcript.
-
-        Returns:
-            Transcript: The retrieved transcript.
-        """
-        if not Transcript.check_url(url):
-            raise ValueError("Invalid YouTube URL")
-        if not url:
-            raise ValueError("URL cannot be empty")
-        url = url.split("&")[0]
-        loader = YoutubeLoader.from_youtube_url(
-            url, add_video_info=True, language=["en", "en-US"]
-        )
+    @lru_cache
+    def get_transcript(self, data: YouTubeData) -> str:
+        video_id = data.video.video_id
         try:
-            output = loader.load()
-            output = output[0]
+            transcript = YouTubeTranscriptApi.get_transcript(video_id)
+            return " ".join([item["text"] for item in transcript])
         except NoTranscriptFound:
-            output = cls._generate_transcript(url)
-        except IndexError:
-            raise ValueError("No transcript available")
+            return self.generate(data)
 
-        try:
-            metadata = Metadata(
-                title=output.metadata["title"],
-                publish_date=output.metadata["publish_date"],
-                author=output.metadata["author"],
-                url=url.split("&")[0],
-            )
-        except Exception:
-            print(output.metadata)
-
-        return cls(content=output.page_content, metadata=metadata)
-
-    @staticmethod
-    def check_url(url: str) -> bool:
-        """
-        Check if the given URL is a valid YouTube video URL.
-
-        Args:
-            url (str): The URL to be checked.
+    @lru_cache
+    def split(self) -> list[str]:
+        """Split the transcript into chunks using a character-based text splitter.
 
         Returns:
-            bool: True if the URL is a valid YouTube video URL, False otherwise.
+            A list of transcript chunks.
         """
-        return any(
-            url.startswith(prefix)
-            for prefix in [
-                "https://www.youtube.com/watch?v=",
-                "https://www.youtube.com/shorts",
-            ]
+        transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
+            chunk_size=10000, chunk_overlap=0
         )
 
-    @classmethod
-    def _generate_transcript(cls, url: str) -> AssemblyTranscription:
+        chunks = transcript_splitter.split_text(self.content)
+        if len(chunks) == 0:
+            raise Transcript.InvalidTranscript()
+
+        return chunks
+
+    def generate(self, data: YouTubeData) -> str:
         """
         Generate a transcript for a YouTube video given its URL.
 
@@ -129,18 +49,18 @@ class Transcript:
         Returns:
             AssemblyTranscription: The generated transcript along with metadata.
         """
-        yt = YouTube(url)
+        yt = data.video
         audio = yt.streams.filter(only_audio=True).first()
-        metadata = {
-            "title": yt.title,
-            "publish_date": yt.publish_date.strftime("%Y-%m-%d"),
-            "author": yt.author,
-        }
 
         with tempfile.TemporaryDirectory() as save_dir:
             audio_file = audio.download(output_path=save_dir)
             loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)
             docs = loader.load()
-        return AssemblyTranscription(
-            page_content=docs[0].page_content, metadata=metadata
-        )
+        return docs[0].page_content
+
+    class InvalidTranscript(ValueError):
+        """Raised when the transcript is not specified."""
+
+        def __init__(self) -> None:
+            """Initializes the InvalidTranscript exception."""
+            super().__init__("The transcript must be specified.")
