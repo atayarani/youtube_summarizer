@@ -4,7 +4,7 @@ from functools import lru_cache
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import AssemblyAIAudioTranscriptLoader
 from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import NoTranscriptFound
+from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
 
 from src.youtube_data import YouTubeData
 
@@ -20,6 +20,8 @@ class Transcript:
             transcript = YouTubeTranscriptApi.get_transcript(video_id)
             return " ".join([item["text"] for item in transcript])
         except NoTranscriptFound:
+            return self.generate(data)
+        except TranscriptsDisabled:
             return self.generate(data)
 
     @lru_cache
