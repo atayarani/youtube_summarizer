@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 import os.path
+from sys import stderr
 
 import slugify
 import typer
 from jinja2 import Template
-from typer import BadParameter
+from pytube import YouTube
 from typing_extensions import Annotated
 
+import src.transcript
+import src.youtube_data
 from src.ai import AI
+from src.data import Transcript, TranscriptChunks, YouTubeVideo
 from src.metadata import Metadata
-from src.transcript import Transcript
-from src.youtube_data import YouTubeData
+from src.transcript import generate_transcript
 
 app = typer.Typer(help="AI Assistant for YouTube videos", rich_markup_mode="rich")
 
@@ -48,31 +51,43 @@ def main(
     Returns:
         None
     """
-    youtube_data = get_youtube_data(url)
-    transcript = get_transcript(youtube_data)
+
+    youtube_video = YouTubeVideo(get_youtube_data_from_url(url)).data
+    transcript = Transcript(get_transcript(youtube_video)).data
+    transcript_chunks = TranscriptChunks(split_transcript(transcript)).data
+    metadata_info = set_metadata(youtube_video)
 
     if any([takeaways, summary]):
-        ai = AI(transcript, youtube_data)
+        ai = AI(transcript_chunks, metadata_info)
 
-    output_dict = {
-        "title": youtube_data.metadata.title,
-        "output_takeaways": ai.takeaways() if takeaways else None,
-        "output_summary": ai.summary() if summary else None,
-        "youtube_data_metadata": str(youtube_data.metadata) if metadata else None,
-    }
-
-    output = get_output(output_dict)
+    output = get_output(
+        metadata_info.title,
+        metadata=str(metadata_info) if metadata else None,
+        takeaways=ai.takeaways() if takeaways else None,
+        summary=ai.summary() if summary else None,
+    )
 
     if write:
-        filename = slugify_video_title(youtube_data.metadata)
+        filename = slugify_video_title(metadata_info.title)
         write_file(filename, output, path)
     else:
         print(output)
 
 
-def get_output(output_dict: dict[str, str | None]) -> str:
+def get_output(
+    title: str,
+    metadata: str | None,
+    takeaways: str | None,
+    summary: str | None,
+) -> str:
+    output_dict = {
+        "title": title,
+        "output_takeaways": takeaways,
+        "output_summary": summary,
+        "youtube_data_metadata": metadata,
+    }
     template_str = (
-        "{{ youtube_data_metadata.title }}\n"
+        "{{ title }}\n"
         "{% if output_summary %}{{ output_summary }}\n---\n{% endif %}"
         "{% if output_takeaways %}{{ output_takeaways }}\n---\n{% endif %}"
         "{% if youtube_data_metadata %}{{ youtube_data_metadata }}{% endif %}"
@@ -82,8 +97,8 @@ def get_output(output_dict: dict[str, str | None]) -> str:
     return template.render(**output_dict)
 
 
-def slugify_video_title(youtube_data_metadata: Metadata) -> str:
-    return slugify.slugify(youtube_data_metadata.title)
+def slugify_video_title(title: str) -> str:
+    return slugify.slugify(title)
 
 
 def write_file(filename: str, content: str, path: str) -> None:
@@ -95,15 +110,48 @@ def write_file(filename: str, content: str, path: str) -> None:
             f.write(content)
 
 
-def get_youtube_data(url: str) -> YouTubeData:
-    try:
-        return YouTubeData(url.split("&")[0])
-    except BadParameter:
-        exit("Invalid YouTube URL")
+def get_youtube_data_from_url(url: str) -> YouTube:
+    result, value = src.youtube_data.get_youtube_data_from_url(url)
+    if result == 0:
+        return value
+    else:
+        print(value)
+        exit(1)
 
 
-def get_transcript(youtube_data: YouTubeData) -> Transcript:
-    return Transcript(youtube_data)
+def get_transcript(youtube_video: YouTube) -> str:
+    result, value = src.transcript.get_transcript(youtube_video.video_id)
+    if result == 0:
+        return value
+    elif result == 1:
+        print("No transcript found", file=stderr)
+        return generate_transcript(youtube_video)
+    elif result == 2:
+        print("Transcripts disabled", file=stderr)
+        return generate_transcript(youtube_video)
+    else:
+        raise NotImplementedError(f"Unhandled result: {result} and value: {value}")
+
+
+def split_transcript(transcript: str) -> list[str]:
+    result, value = src.transcript.split(transcript)
+    if result == 0:
+        return value
+    else:
+        print(value)
+        exit(1)
+
+
+def set_metadata(video: YouTube) -> Metadata:
+    video.streams.first()
+    return Metadata(
+        title=video.title,
+        publish_date=video.publish_date.strftime("%Y-%m-%d"),
+        author=video.author,
+        url=video.watch_url,
+        description="".join([f"\n\t{x}" for x in video.description.split("\n")]),
+        video_id=video.video_id,
+    )
 
 
 if __name__ == "__main__":

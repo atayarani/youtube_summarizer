@@ -4,8 +4,6 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from src.metadata import Metadata
-from src.transcript import Transcript
-from src.youtube_data import YouTubeData
 
 
 class AI:
@@ -15,7 +13,7 @@ class AI:
     on the conversation.
     """
 
-    def __init__(self, transcript: Transcript, youtube_data: YouTubeData) -> None:
+    def __init__(self, transcript_chunks: list[str], metadata: Metadata) -> None:
         """Initializes an instance of the AI class.
 
         Args:
@@ -27,8 +25,8 @@ class AI:
         Returns:
             None
         """
-        self.transcript_chunks: list[str] = transcript.split()
-        self.metadata: Metadata = youtube_data.metadata
+        self.transcript_chunks = transcript_chunks
+        self.metadata: Metadata = metadata
 
     def takeaways(self) -> str:
         """Returns the key takeaways from the transcript provided by the user.
