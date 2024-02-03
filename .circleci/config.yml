@@ -3,6 +3,7 @@
 version: 2.1
 orbs:
   python: circleci/python@2
+  coverage-reporter: codacy/coverage-reporter@13.15.1
 jobs:
   test-python:
     parameters:
@@ -16,24 +17,27 @@ jobs:
       - checkout
       - python/install-packages:
           pkg-manager: poetry
-      - run:
-          name: CodeClimate before-build
-          command: |
-            curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-            chmod +x ./cc-test-reporter
-            ./cc-test-reporter before-build
+      # - run:
+      #     name: CodeClimate before-build
+      #     command: |
+      #       curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+      #       chmod +x ./cc-test-reporter
+      #       ./cc-test-reporter before-build
       - run:
           name: Run tests
           command: poetry run pytest --cov=./ --cov-report xml -v 
-      - run:
-          name: CodeClimate combine and upload coverage
-          command: |
-            # Format the various coverage reports
-            ./cc-test-reporter format-coverage -t coverage.py -o coverage/codeclimate.python.json coverage/python/coverage.xml
-            # Combine the test coverage reports
-            ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
-            # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
-            ./cc-test-reporter upload-coverage || true
+      - coverage-reporter/send_report:
+          coverage-reports: coverage.xml
+          project-token: $CODACY_PROJECT_TOKEN
+      # - run:
+      #     name: CodeClimate combine and upload coverage
+      #     command: |
+      #       # Format the various coverage reports
+      #       ./cc-test-reporter format-coverage -t coverage.py -o coverage/codeclimate.python.json coverage/python/coverage.xml
+      #       # Combine the test coverage reports
+      #       ./cc-test-reporter sum-coverage coverage/codeclimate.*.json
+      #       # Attempt to submit the coverage report, but don't fail the build if this fails (`|| true`)
+      #       ./cc-test-reporter upload-coverage || true
 workflows:
   test:
     jobs:
