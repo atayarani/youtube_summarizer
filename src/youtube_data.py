@@ -1,19 +1,12 @@
-"""
-This module provides functionality for fetching and processing data from YouTube.
-It utilizes the `pytube` library to interact with the YouTube API and retrieve video information.
-The main class in this module is `YouTubeData`, which allows users to fetch video metadata and descriptions.
-"""
-
-from pytube import YouTube
-from pytube.exceptions import RegexMatchError
+import pytube
 
 
-def get_youtube_data_from_url(url: str) -> tuple[int, YouTube | str]:
+def get_youtube_data_from_url(url: str) -> tuple[int, pytube.YouTube | str]:
     try:
-        video = YouTube(url.split("&")[0])
+        video = pytube.YouTube(url.split("&")[0])
         video.check_availability()  # pragma: no cover
         return (0, video)
-    except RegexMatchError:
+    except pytube.exceptions.RegexMatchError:
         return (1, "Invalid YouTube URL")
 
 

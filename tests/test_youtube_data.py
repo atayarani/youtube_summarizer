@@ -1,62 +1,33 @@
 import pytest
-from pytube.exceptions import RegexMatchError
-from typer import BadParameter
+import pytube
 
-from src.metadata import Metadata
-from src.youtube_data import YouTubeData
+import src.youtube_data
+from src.youtube_data import get_youtube_data_from_url
 
 
 @pytest.fixture
-def valid_metadata():
-    return Metadata(
-        title="Title",
-        publish_date="2022-01-01",
-        author="Author",
-        url="www.example.com",
-        description="Description",
-        video_id="12345",
+def url():
+    return "https://www.youtube.com/watch?v=12345"
+
+
+def test_get_youtube_data_from_url_success(mocker, url):
+    mock_video = mocker.patch("pytube.YouTube")
+    mock_avail = mock_video.return_value.check_availability
+
+    result, value = get_youtube_data_from_url(url)
+
+    assert result == 0
+    assert value == mock_video.return_value
+    mock_avail.assert_called_once()
+
+
+def test_get_youtube_data_from_url_fail(mocker, url):
+    mock_video = mocker.patch("pytube.YouTube")
+    mock_video.side_effect = pytube.exceptions.RegexMatchError(
+        "video_id", r"watch\?v=\S+"
     )
 
+    result, value = get_youtube_data_from_url(url)
 
-@pytest.fixture
-def mock_youtube_data__get_video(mocker):
-    return mocker.patch("src.youtube_data.YouTubeData._get_video")
-
-
-@pytest.fixture
-def mock_youtube_data(mocker):
-    return mocker.patch("src.youtube_data.YouTubeData")
-
-
-class TestYoutubeData:
-    def test_youtube_data_metadata(self, valid_metadata, mock_youtube_data__get_video):
-        video = mock_youtube_data__get_video.return_value
-        video.title = valid_metadata.title
-        video.publish_date.strftime.return_value = valid_metadata.publish_date
-        video.author = valid_metadata.author
-        video.watch_url = valid_metadata.url
-        video.description = valid_metadata.description
-        video.video_id = valid_metadata.video_id
-
-        youtube_data = YouTubeData("https://www.youtube.com/watch?v=12345")
-        metadata = youtube_data.metadata
-        assert metadata.title == valid_metadata.title
-        assert metadata.publish_date == valid_metadata.publish_date
-        assert metadata.author == valid_metadata.author
-        assert metadata.url == valid_metadata.url
-        assert metadata.description == f"\n\t{valid_metadata.description}"
-        assert metadata.video_id == valid_metadata.video_id
-
-    def test_youtube_data__get_video_raises_error(self, mock_youtube_data__get_video):
-        mock_youtube_data__get_video.side_effect = BadParameter("Invalid YouTube URL")
-        with pytest.raises(BadParameter):
-            YouTubeData("https://www.youtube.com/watch?v=12345")
-
-    # @FIXME: This test fails
-    # pytube.Youtube doesn't mock properly
-    # def test_youtube_data__get_video_returns_youtube_object(self, mocker):
-    #     mock_youtube = mocker.patch("pytube.YouTube")
-    #     mock_availability = mocker.patch("pytube.YouTube.check_availability")
-    #     youtube = YouTubeData("https://www.youtube.com/watch?v=12345")
-
-    #     assert youtube.video == mock_youtube
+    assert result == 1
+    assert value == "Invalid YouTube URL"

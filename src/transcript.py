@@ -1,22 +1,23 @@
 import tempfile
+from typing import Tuple
 
-from langchain.text_splitter import CharacterTextSplitter
+import langchain
+import youtube_transcript_api
+from langchain.docstore.document import Document
 from langchain_community.document_loaders import AssemblyAIAudioTranscriptLoader
 from pytube import YouTube
-from youtube_transcript_api import YouTubeTranscriptApi
-from youtube_transcript_api._errors import NoTranscriptFound, TranscriptsDisabled
 
 
-def get_transcript(video_id: str) -> tuple[int, str]:
+def get_transcript(video_id: str) -> Tuple[int, str]:
     try:
-        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript = youtube_transcript_api.YouTubeTranscriptApi.get_transcript(
+            video_id
+        )
         return (0, " ".join([item["text"] for item in transcript]))
-    except NoTranscriptFound:
+    except youtube_transcript_api._errors.NoTranscriptFound:
         return (1, "No transcript found")
-        # return self.generate(data)
-    except TranscriptsDisabled:
+    except youtube_transcript_api._errors.TranscriptsDisabled:
         return (2, "Transcripts disabled")
-        # return self.generate(data)
 
 
 def generate_transcript(video: YouTube) -> str:
@@ -37,16 +38,22 @@ def generate_transcript(video: YouTube) -> str:
     return content
 
 
-def split(transcript: str) -> tuple[int, list[str] | str]:
-    transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
-        chunk_size=10000, chunk_overlap=0
+def split(transcript: str) -> Tuple[int, Tuple[str, ...]]:
+    transcript_splitter = langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder(
+        # chunk_size=10, chunk_overlap=0
+        chunk_size=10000,
+        chunk_overlap=0,
     )
+    # print(transcript_splitter)
 
     chunks = transcript_splitter.split_text(transcript)
+    # print(len(chunks))
+    if len(chunks) == 1:
+        return (0, (transcript,))
     if len(chunks) == 0:
-        return (1, "The transcript must be specified.")
+        return (1, ("The transcript must be specified.",))
 
-    return (0, chunks)
+    return (0, tuple(chunk for chunk in chunks))
 
 
 def fetch_youtube_audio(video: YouTube, save_dir: str) -> YouTube:
@@ -54,58 +61,6 @@ def fetch_youtube_audio(video: YouTube, save_dir: str) -> YouTube:
     return audio.download(output_path=save_dir)
 
 
-def parse_youtube_audio(audio_file: str) -> list:  # type: ignore
+def parse_youtube_audio(audio_file: str) -> list[Document]:
     loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)
     return loader.load()
-
-
-# class Transcript:
-# def __init__(self, youtube_data: YouTubeData):
-# self.content = self.get_transcript(youtube_data)
-
-# @lru_cache
-# def get_transcript(self, data: YouTubeData) -> str:
-#         """
-#         Retrieves the transcript of a YouTube video.
-
-#         Args:
-#             data (YouTubeData): The YouTube data object containing the video information.
-
-#         Returns:
-#             str: The transcript of the YouTube video.
-#         """
-#         video_id = data.video.video_id
-#         try:
-#             transcript = YouTubeTranscriptApi.get_transcript(video_id)
-#             return " ".join([item["text"] for item in transcript])
-#         except NoTranscriptFound:
-#             return self.generate(data)
-#         except TranscriptsDisabled:
-#             return self.generate(data)
-
-# @lru_cache
-# def generate(self, data: YouTubeData) -> str:
-#     """
-#     Generate a transcript for a YouTube video given its URL.
-
-#     Args:
-#         url (str): The URL of the YouTube video.
-
-#     Returns:
-#         AssemblyTranscription: The generated transcript along with metadata.
-#     """
-#     yt = data.video
-#     audio = yt.streams.filter(only_audio=True).first()
-
-#     with tempfile.TemporaryDirectory() as save_dir:
-#         audio_file = audio.download(output_path=save_dir)
-#         loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)
-#         docs = loader.load()
-#     return docs[0].page_content
-
-# class InvalidTranscript(ValueError):
-#     """Raised when the transcript is not specified."""
-
-#     def __init__(self) -> None:
-#         """Initializes the InvalidTranscript exception."""
-#         super().__init__()
