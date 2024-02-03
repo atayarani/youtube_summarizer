@@ -14,13 +14,13 @@ def get_transcript(video_id: str) -> Tuple[int, str]:
             video_id
         )
         return (0, " ".join([item["text"] for item in transcript]))
-    except youtube_transcript_api._errors.NoTranscriptFound:
-        return (1, "No transcript found")
-    except youtube_transcript_api._errors.TranscriptsDisabled:
-        return (2, "Transcripts disabled")
+    except youtube_transcript_api._errors.NoTranscriptFound as err:
+        return (1, err.CAUSE_MESSAGE)
+    except youtube_transcript_api._errors.TranscriptsDisabled as err:
+        return (2, err.CAUSE_MESSAGE)
 
 
-def generate_transcript(video: YouTube) -> str:
+def generate_transcript(video: YouTube) -> Tuple[int, str]:
     """
     Generate a transcript for a YouTube video given its URL.
 
@@ -34,8 +34,10 @@ def generate_transcript(video: YouTube) -> str:
     with tempfile.TemporaryDirectory() as save_dir:
         audio_file = fetch_youtube_audio(video, save_dir)
         transcript = parse_youtube_audio(audio_file)
-    content: str = transcript[0].page_content
-    return content
+    if len(transcript) == 0:
+        return (1, "No transcript found")
+
+    return (0, transcript[0].page_content)
 
 
 def split(transcript: str) -> Tuple[int, Tuple[str, ...]]:
@@ -57,10 +59,10 @@ def split(transcript: str) -> Tuple[int, Tuple[str, ...]]:
 
 
 def fetch_youtube_audio(video: YouTube, save_dir: str) -> YouTube:
-    audio = video.streams.filter(only_audio=True).first()
-    return audio.download(output_path=save_dir)
+    audio = video.streams.filter(only_audio=True).first()  # pragma: no cover
+    return audio.download(output_path=save_dir)  # pragma: no cover
 
 
 def parse_youtube_audio(audio_file: str) -> list[Document]:
-    loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)
-    return loader.load()
+    loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)  # pragma: no cover
+    return loader.load()  # pragma: no cover

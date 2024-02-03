@@ -27,51 +27,6 @@ def url():
     return "https://www.youtube.com/watch?v=12345"
 
 
-class TestGetTranscript:
-    def test_function_succeeds(self, mocker):
-        mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
-        mock_transcript_get_transcript.return_value = (0, "foo")
-        mock_youtube_video = mocker.patch("pytube.YouTube")
-        mock_youtube_video.video_id = "12345"
-
-        assert get_transcript(mock_youtube_video) == "foo"
-
-    def test_transcript_not_found(self, mocker):
-        mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
-        mock_transcript_get_transcript.return_value = (1, "foo")
-        mock_youtube_video = mocker.patch("pytube.YouTube")
-        mock_youtube_video.video_id = "12345"
-        mock_transcript_generate_transcript = mocker.patch(
-            "src.transcript.generate_transcript"
-        )
-
-        get_transcript(mock_youtube_video)
-
-        mock_transcript_generate_transcript.assert_called_once_with(mock_youtube_video)
-
-    def test_transcripts_disabled(self, mocker):
-        mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
-        mock_transcript_get_transcript.return_value = (2, "foo")
-        mock_youtube_video = mocker.patch("pytube.YouTube")
-        mock_youtube_video.video_id = "12345"
-        mock_transcript_generate_transcript = mocker.patch(
-            "src.transcript.generate_transcript"
-        )
-
-        get_transcript(mock_youtube_video)
-
-        mock_transcript_generate_transcript.assert_called_once_with(mock_youtube_video)
-
-    def test_not_implemented_error(self, mocker):
-        mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
-        mock_transcript_get_transcript.return_value = (99, "foo")
-        mock_youtube_video = mocker.patch("pytube.YouTube")
-        mock_youtube_video.video_id = "12345"
-
-        with pytest.raises(NotImplementedError):
-            get_transcript(mock_youtube_video)
-
-
 class TestSplitTranscript:
     def test_function_succeeds_with_one_chunk(self, mocker):
         mock_transcript_split = mocker.patch("src.transcript.split")

@@ -5,12 +5,14 @@ from typing import Tuple
 
 import slugify
 import typer
+import youtube_transcript_api
 from jinja2 import Template
 from langchain_core.messages import SystemMessage
 from pytube import YouTube
 from typing_extensions import Annotated
 
 import src.ai
+import src.exceptions
 import src.metadata
 import src.transcript
 import src.youtube_data
@@ -156,10 +158,20 @@ def get_transcript(youtube_video: YouTube) -> str:
         return value
     elif result == 1:
         print("No transcript found", file=stderr)
-        return src.transcript.generate_transcript(youtube_video)
+        generate_result, generate_value = src.transcript.generate_transcript(
+            youtube_video
+        )
+        if generate_result != 0:
+            raise src.exceptions.TranscriptGenerationFailed(value)
+        return generate_value
     elif result == 2:
         print("Transcripts disabled", file=stderr)
-        return src.transcript.generate_transcript(youtube_video)
+        generate_result, generate_value = src.transcript.generate_transcript(
+            youtube_video
+        )
+        if generate_result != 0:
+            raise src.exceptions.TranscriptGenerationFailed(value)
+        return generate_value
     else:
         raise NotImplementedError(f"Unhandled result: {result} and value: {value}")
 
