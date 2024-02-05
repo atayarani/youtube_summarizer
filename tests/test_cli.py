@@ -139,7 +139,7 @@ class TestMain:
 
         with runner.isolated_filesystem():
             result = runner.invoke(
-                app, ["--no-takeaways", "--no-summary", "--no-metadata", "--write", url]
+                app, ["--no-takeaways", "--no-summary", "--no-metadata", "--path", ".", url]
             )
 
             mock_slugify.assert_called_once()
