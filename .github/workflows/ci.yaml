@@ -14,6 +14,8 @@ jobs:
           domain: ${{ github.repository_owner }}
       - name: Do testing stuff
         run: poetry run pytest --junit-xml=./results/pytest.xml --cov=./ --cov-report xml -v
+      - name: Run Lizard
+        run: poetry run lizard -C 5 -X src > ./results/lizard.xml
       - name: Push result to Testspace server
         run: |
           testspace ./results/*.xml coverage.xml

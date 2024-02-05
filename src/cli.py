@@ -5,7 +5,6 @@ from typing import Tuple
 
 import slugify
 import typer
-import youtube_transcript_api
 from jinja2 import Template
 from langchain_core.messages import SystemMessage
 from pytube import YouTube
@@ -32,13 +31,10 @@ def main(
     metadata: Annotated[
         bool, typer.Option(help="Whether or not to include video metadata")
     ] = True,
-    write: Annotated[
-        bool, typer.Option("--write", help="Write the output to a file")
-    ] = False,
     path: Annotated[
-        pathlib.Path,
+        pathlib.Path | None,
         typer.Option(help="The path to write the output file to"),
-    ] = pathlib.Path("."),
+    ] = None,
 ) -> None:
     """
     Main function to process YouTube video and generate summary.
@@ -48,7 +44,6 @@ def main(
         takeaways (bool): Flag indicating whether to generate takeaways from the video.
         summary (bool): Flag indicating whether to generate a summary.
         metadata (bool): Flag indicating whether to print video metadata.
-        write (bool): Flag indicating whether to write the output to a file.
         path (str): The path to write the output file.
 
     Returns:
@@ -87,7 +82,7 @@ def main(
         summary=summary_content if summary else None,
     )
 
-    if write:
+    if path is not None:
         filename = slugify_video_title(metadata_info["title"])
         write_file(filename, output, path)
     else:
