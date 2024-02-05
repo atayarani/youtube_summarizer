@@ -13,8 +13,8 @@ jobs:
         with:
           domain: ${{ github.repository_owner }}
       - name: Do testing stuff
-        run: poetry run pytest --cov=./ --cov-report xml -v
+        run: poetry run pytest --junit-xml=./results/pytest.xml --cov=./ --cov-report xml -v
       - name: Push result to Testspace server
         run: |
-          testspace coverage.xml
+          testspace ./results/*.xml coverage.xml
         if: always()
