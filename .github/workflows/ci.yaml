@@ -16,5 +16,5 @@ jobs:
         run: poetry run pytest --cov=./ --cov-report xml -v
       - name: Push result to Testspace server
         run: |
-          testspace ./results/*.xml coverage.xml
+          testspace coverage.xml
         if: always()
