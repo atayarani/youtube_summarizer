@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import pathlib
 from sys import stderr
-from typing import Tuple
+from typing import Optional, Tuple
 
 import slugify
 import typer
@@ -32,7 +32,7 @@ def main(
         bool, typer.Option(help="Whether or not to include video metadata")
     ] = True,
     path: Annotated[
-        pathlib.Path | None,
+        Optional[pathlib.Path],
         typer.Option(help="The path to write the output file to"),
     ] = None,
 ) -> None:
