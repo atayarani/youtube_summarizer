@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "youtube-summarizer"
 version = "0.3.0"
-description = ""
+description = "A commandline application to summarize youtube videos"
 authors = ["Ali <619512+atayarani@users.noreply.github.com>"]
 readme = "README.md"
 packages = [{ include = "src" }]
@@ -14,6 +14,8 @@ classifiers = [
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 license = "MIT"
+urls = { Homepage = "https://github.com/atayarani/youtube-summarizer" }
+keywords = ["youtube", "summarizer", "summarization", "youtube-summarizer"]
 
 [tool.poetry.scripts]
 summarize = "src.cli:app"
