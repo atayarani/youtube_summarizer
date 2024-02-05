@@ -14,10 +14,11 @@ def get_transcript(video_id: str) -> Tuple[int, str]:
             video_id
         )
         return (0, " ".join([item["text"] for item in transcript]))
-    except youtube_transcript_api._errors.NoTranscriptFound as err:
+    except (
+        youtube_transcript_api._errors.NoTranscriptFound,
+        youtube_transcript_api._errors.TranscriptsDisabled,
+    ) as err:
         return (1, err.CAUSE_MESSAGE)
-    except youtube_transcript_api._errors.TranscriptsDisabled as err:
-        return (2, err.CAUSE_MESSAGE)
 
 
 def generate_transcript(video: YouTube) -> Tuple[int, str]:

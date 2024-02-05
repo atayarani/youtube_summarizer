@@ -55,7 +55,6 @@ def main(
     transcript_chunks = split_transcript(transcript)
     metadata_info = src.metadata.set_metadata(youtube_video)
 
-    # if any([takeaways, summary]):
     if takeaways:
         takeaway_content = get_ai_content(
             transcript_chunks,
@@ -153,14 +152,6 @@ def get_transcript(youtube_video: YouTube) -> str:
         return value
     elif result == 1:
         print("No transcript found", file=stderr)
-        generate_result, generate_value = src.transcript.generate_transcript(
-            youtube_video
-        )
-        if generate_result != 0:
-            raise src.exceptions.TranscriptGenerationFailed(value)
-        return generate_value
-    elif result == 2:
-        print("Transcripts disabled", file=stderr)
         generate_result, generate_value = src.transcript.generate_transcript(
             youtube_video
         )
