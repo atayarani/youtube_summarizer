@@ -2,12 +2,33 @@ import pytube
 
 
 def get_youtube_data_from_url(url: str) -> tuple[int, pytube.YouTube | str]:
+    """
+    Get a YouTube video object from the given URL.
+
+    Args:
+        url: The URL of the YouTube video.
+
+    Returns:
+        A tuple containing an integer status code and either a pytube.YouTube object representing the video or a string with an error message.
+
+    Raises:
+        None
+
+    Example:
+        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        status, data = get_youtube_data_from_url(url)
+        if status == 0:
+            print(f"Video title: {data.title}")
+        else:
+            print(f"Error: {data}")
+    """
     try:
         video = pytube.YouTube(url.split("&")[0])
         video.check_availability()  # pragma: no cover
-        return (0, video)
     except pytube.exceptions.RegexMatchError:
-        return (1, "Invalid YouTube URL")
+        return 1, "Invalid YouTube URL"
+    else:
+        return 0, video
 
 
 # class YouTubeData:

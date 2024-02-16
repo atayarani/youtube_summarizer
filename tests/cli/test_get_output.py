@@ -8,19 +8,60 @@ from src.cli import get_output
 
 
 class TestGetOutput:
-    def test_title_only(self):
+    """
+    Class for testing the `get_output` function.
+
+    Methods:
+    - test_title_only: Tests the `get_output` function with only the title parameter.
+    - test_title_and_metadata: Tests the `get_output` function with the title and metadata parameters.
+    - test_title_takeaways_and_metadata: Tests the `get_output` function with the title, metadata, and takeaways parameters.
+    - test_all_fields: Tests the `get_output` function with all parameters: title, metadata, takeaways, and summary.
+    - test_idempotent_get_output: Tests the idempotency of the `get_output` function.
+    - test_fuzz_get_output: Fuzz testing for the `get_output` function.
+
+    """
+
+    def test_title_only(self) -> None:
+        """Test for the `get_output` method with only the `title` parameter."""
         assert get_output("title", None, None, None) == "# title\n\n"
 
-    def test_title_and_metadata(self):
+    def test_title_and_metadata(self) -> None:
+        r"""
+        Test method for the `get_output` function with "title" and "metadata" parameters.
+
+        Asserts that the returned output of `get_output` with "title" and "metadata" parameters is equal to "# title\n\nmetadata".
+
+        Returns:
+            None
+        """
         assert get_output("title", "metadata", None, None) == "# title\n\nmetadata"
 
-    def test_title_takeaways_and_metadata(self):
+    def test_title_takeaways_and_metadata(self) -> None:
+        """
+        Test method for testing the test_title_takeaways_and_metadata method.
+
+        Args:
+            self (class): The instance of the class.
+
+        Returns:
+            None: This method does not return anything.
+        """
         assert (
             get_output("title", "metadata", "takeaways", None)
             == "# title\n\ntakeaways\n---\nmetadata"
         )
 
-    def test_all_fields(self):
+    def test_all_fields(self) -> None:
+        """
+        Test the 'get_output' method with all field parameters.
+
+        This method asserts that the output of the 'get_output' method
+        is equal to the expected output string when all field parameters
+        ('title', 'metadata', 'takeaways', and 'summary') are provided.
+
+        Returns:
+            None
+        """
         assert (
             get_output("title", "metadata", "takeaways", "summary")
             == "# title\n\nsummary\n---\ntakeaways\n---\nmetadata"
@@ -40,6 +81,18 @@ class TestGetOutput:
         takeaways: typing.Union[str, None],
         summary: typing.Union[str, None],
     ) -> None:
+        """
+        Test method for checking the idempotent behavior of the `get_output` function.
+
+        Args:
+            title: A string representing the title parameter for `get_output`.
+            metadata: Either a string representing the metadata parameter for `get_output`,
+                      or None if metadata is not provided.
+            takeaways: Either a string representing the takeaways parameter for `get_output`,
+                       or None if takeaways is not provided.
+            summary: Either a string representing the summary parameter for `get_output`,
+                     or None if summary is not provided.
+        """
         result = get_output(
             title=title, metadata=metadata, takeaways=takeaways, summary=summary
         )
@@ -61,4 +114,14 @@ class TestGetOutput:
         takeaways: typing.Union[str, None],
         summary: typing.Union[str, None],
     ) -> None:
+        """
+        Test method for fuzz testing the `get_output` function.
+
+        Args:
+            title (str): The title of the test case.
+            metadata (Union[str, None]): The metadata associated with the test case.
+            takeaways (Union[str, None]): The takeaways from the test case.
+            summary (Union[str, None]): The summary of the test case.
+
+        """
         get_output(title=title, metadata=metadata, takeaways=takeaways, summary=summary)

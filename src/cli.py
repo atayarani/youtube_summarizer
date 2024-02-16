@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import functools
 import pathlib
 from sys import stderr
 from typing import Optional, Tuple
@@ -8,6 +9,9 @@ import typer
 from jinja2 import Template
 from langchain_core.messages import SystemMessage
 from pytube import YouTube
+from returns.maybe import Maybe, Nothing, Some
+from returns.pipeline import flow
+from returns.result import Failure, Result, Success
 from typing_extensions import Annotated
 
 import src.ai
@@ -16,7 +20,9 @@ import src.metadata
 import src.transcript
 import src.youtube_data
 
-app = typer.Typer(help="AI Assistant for YouTube videos", rich_markup_mode="rich")
+app: typer.Typer = typer.Typer(
+    help="AI Assistant for YouTube videos", rich_markup_mode="rich"
+)
 
 
 @app.command()
@@ -37,55 +43,58 @@ def main(
     ] = None,
 ) -> None:
     """
-    Main function to process YouTube video and generate summary.
+    Process YouTube videos and write the output to a file or stdout.
 
-    Args:
-        url (str): The URL of the YouTube video.
-        takeaways (bool): Flag indicating whether to generate takeaways from the video.
-        summary (bool): Flag indicating whether to generate a summary.
-        metadata (bool): Flag indicating whether to print video metadata.
-        path (str): The path to write the output file.
-
-    Returns:
-        None
+    :param url: The URL of the YouTube video
+    :param takeaways: Whether or not to include key takeaways (default:
+            True)
+    :param summary: Whether or not to include an article summary (default:
+            True)
+    :param metadata: Whether or not to include video metadata (default:
+            True)
+    :param path: The path to write the output file to (default: None)
     """
-
     youtube_video = get_youtube_data_from_url(url)
     transcript = get_transcript(youtube_video)
     transcript_chunks = split_transcript(transcript)
     metadata_info = src.metadata.set_metadata(youtube_video)
 
-    if takeaways:
-        takeaway_content = get_ai_content(
-            transcript_chunks,
-            system_message_content=(
-                "The user will provide a transcript.From the transcript, you will provide a bulleted list of "
-                f"key takeaways. At the top of the list, add a title: '## Key Takeaways — {metadata_info['title']}'"
-            ),
+    ai_content = functools.partial(
+        src.ai.openai_chat_stream, temperature=1.0, transcript_chunks=transcript_chunks
+    )
+    takeaways_message = SystemMessage(
+        content=(
+            "The user will provide a transcript.From the transcript, you will provide a bulleted list of "
+            f"key takeaways. At the top of the list, add a title: '## Key Takeaways — {metadata_info['title']}'"
         )
-    if summary:
-        summary_content = get_ai_content(
-            transcript_chunks,
-            system_message_content=(
-                "The user will provide a transcript."
-                "reformat the transcript  into an in-depth "
-                "markdown blog post using sections and section headers."
-                f"Add a section title: '## Summary — {metadata_info['title']}'"
-            ),
+    )
+    summary_message = SystemMessage(
+        content=(
+            "The user will provide a transcript. Reformat the transcript into an in-depth "
+            "markdown blog post using sections and section headers."
+            f"Add a section title: '## Summary — {metadata_info['title']}'"
         )
+    )
+
+    takeaway_content = (
+        Maybe.from_optional(takeaways_message if takeaways else None)
+        .bind_optional(lambda message: ai_content(system_message=message))
+        .value_or(None)
+    )
+    summary_content = (
+        Maybe.from_optional(summary_message if summary else None)
+        .bind_optional(lambda message: ai_content(system_message=message))
+        .value_or(None)
+    )
 
     output = get_output(
         metadata_info["title"],
-        metadata=str(metadata_info) if metadata else None,
+        metadata=src.metadata.metadata_string(metadata_info) if metadata else None,
         takeaways=takeaway_content if takeaways else None,
         summary=summary_content if summary else None,
     )
 
-    if path is not None:
-        filename = slugify_video_title(metadata_info["title"])
-        write_file(filename, output, path)
-    else:
-        print(output)
+    write_file(metadata_info["title"], output, path) if path else print(output)
 
 
 def get_output(
@@ -94,6 +103,16 @@ def get_output(
     takeaways: str | None,
     summary: str | None,
 ) -> str:
+    """
+    Assemble and return the formatted output string.
+
+    :param title: The title of the output.
+    :param metadata: The metadata related to the output. Can be None.
+    :param takeaways: The takeaways from the output. Can be None.
+    :param summary: The summary of the output. Can be None.
+
+
+    """
     output_dict = {
         "title": title,
         "output_takeaways": takeaways,
@@ -108,77 +127,163 @@ def get_output(
     )
 
     template = Template(template_str)
-    return template.render(**output_dict)
+    output: str = template.render(**output_dict)
+    return output
 
 
-def slugify_video_title(title: str) -> str:
-    return slugify.slugify(title)
+def write_file(title: str, content: str, path: pathlib.Path) -> None:
+    """
+    Write the output to a file.
 
+    Args:
+        title (str): The title of the file.
+        content (str): The content to be written in the file.
+        path (pathlib.Path): The path where the file will be created.
 
-def write_file(filename: str, content: str, path: pathlib.Path) -> None:
-    file = path.joinpath(filename).with_suffix(".md")
-    result, value = validate_output_path(file, path)
+    Returns:
+        None
 
-    if value is not None:
-        raise value
+    """
+    file = flow(
+        slugify.slugify(title),
+        lambda filename: path.joinpath(filename).with_suffix(".md"),
+    )
+
+    result = Maybe.from_optional(validate_output_path(file, path)).unwrap()
+    # print(result.unwrap())
+    #     # .bind_optional(lambda _: file.write_text(content))
+    #     .or_else_call(raise_exception(src.exceptions.OutputPathValidationError()))
+    # )
+    # print(validate_output_path(file, path))
+
+    # if isinstance(result, Nothing):
+    if result is Nothing:
+        raise src.exceptions.OutputPathValidationError()
 
     file.write_text(content)
 
 
 def validate_output_path(
     file_path: pathlib.Path, dir_path: pathlib.Path
-) -> tuple[int, OSError | None]:
-    if file_path.exists():
-        return (1, FileExistsError(f"{file_path} already exists"))
-    elif not dir_path.is_dir():
-        return (2, NotADirectoryError(f"{dir_path} is not a directory"))
-    elif not dir_path.exists():
-        return (3, FileNotFoundError(f"{dir_path} does not exist"))
-    else:
-        return (0, None)
+) -> Maybe[bool]:
+    """
+    Validate the output path.
+
+    :param file_path: pathlib.Path:
+    :param dir_path: pathlib.Path:
+
+
+    """
+    conditions = not dir_path.exists() or not dir_path.is_dir() or file_path.exists()
+    return Nothing if conditions else Some(True)
+    # return Failure(None) if conditions else Success(True)
 
 
 def get_youtube_data_from_url(url: str) -> YouTube:
+    """
+    Return YouTube data from given URL.
+
+    :param url: str
+    :param url: str:
+    :param url: str:
+    :returns: A YouTube object containing the data of the YouTube video.
+    :raises ValueError: If the URL is invalid or the YouTube video data
+    :raises cannot: be fetched
+
+    """
     result, value = src.youtube_data.get_youtube_data_from_url(url)
     if result == 0:
         return value
-    else:
-        raise ValueError(value)
+
+    raise ValueError(value)
+
+
+# def get_transcript(youtube_video: YouTube) -> str:
+#     """
+#     Retrieve the transcript for a given YouTube video.
+#
+#     Args:
+#         youtube_video: A YouTube object representing the video for which to retrieve the transcript.
+#
+#     Returns:
+#         str: The transcript of the YouTube video.
+#
+#     Raises:
+#         src.exceptions.TranscriptGenerationFailedError: If the generation of the transcript fails.
+#         NotImplementedError: If the result type is not handled.
+#     """
+#     result = src.transcript.get_transcript(youtube_video.video_id)
+#
+#     if isinstance(result, Success):
+#         return result.unwrap()
+#
+#     if isinstance(result, Failure):
+#         # Handle Failure case, possibly logging or raising an exception
+#         # For demonstration, we'll just return a default value
+#         print("No transcript found", file=stderr)
+#         generate_result = src.transcript.generate_transcript(youtube_video)
+#
+#         if isinstance(generate_result, Success):
+#             # If the result is a Success, extract and return the value
+#             return result.unwrap()
+#
+#         if isinstance(generate_result, Failure):
+#             # Handle Failure case, possibly logging or raising an exception
+#             # For demonstration, we'll just return a default value
+#             raise src.exceptions.TranscriptGenerationFailedError({result.failure()})
+#
+#     raise NotImplementedError(f"Unhandled result: {result}")
 
 
 def get_transcript(youtube_video: YouTube) -> str:
-    result, value = src.transcript.get_transcript(youtube_video.video_id)
-    if result == 0:
-        return value
-    elif result == 1:
+    """Retrieve the transcript for a given YouTube video."""
+    result = fetch_transcript(youtube_video)
+    return handle_result(result, youtube_video)
+
+
+def fetch_transcript(youtube_video: YouTube) -> Result:
+    """Fetches the transcript and returns the result."""
+    return src.transcript.get_transcript(youtube_video.video_id)
+
+
+def handle_result(result: Result, youtube_video: YouTube) -> str:
+    """Processes the result of a transcript fetch."""
+    if not isinstance(result, (Success, Failure)):
+        raise NotImplementedError(f"Unhandled result: {result}")
+
+    if isinstance(result, Failure):
         print("No transcript found", file=stderr)
-        generate_result, generate_value = src.transcript.generate_transcript(
-            youtube_video
-        )
-        if generate_result != 0:
-            raise src.exceptions.TranscriptGenerationFailed(value)
-        return generate_value
-    else:
-        raise NotImplementedError(f"Unhandled result: {result} and value: {value}")
+        return handle_transcript_generation(youtube_video, result)
+    return result.unwrap()
+
+
+def handle_transcript_generation(youtube_video: YouTube, result: Result) -> str:
+    """Handles transcript generation in case of a fetch failure."""
+    generate_result = src.transcript.generate_transcript(youtube_video)
+    if isinstance(generate_result, Failure):
+        raise src.exceptions.TranscriptGenerationFailedError(result.failure())
+    return generate_result.unwrap()
 
 
 def split_transcript(transcript: str) -> Tuple[str, ...]:
+    """
+    Split a transcript into multiple parts.
+
+    :param transcript: str:
+    :type transcript: str
+    :param transcript: str:
+    :param transcript: str:
+    :returns: A tuple containing the split parts of the
+    :rtype: Tuple[str, ...]
+    :raises ValueError: If the split operation fails.
+
+    Example:
+    >>> transcript = "This is a transcript"
+        >>> split_transcript(transcript)
+        ("This is a transcript",)
+    """
     result, value = src.transcript.split(transcript)
     if result == 1:
-        raise ValueError(value)
-
-    return value
-
-
-def get_ai_content(
-    transcript_chunks: Tuple[str, ...], system_message_content: str
-) -> str:
-    result, value = src.ai.openai_chat(
-        system_message=SystemMessage(content=system_message_content),
-        temperature=1.0,
-        transcript_chunks=transcript_chunks,
-    )
-    if result != 0:
         raise ValueError(value)
 
     return value
