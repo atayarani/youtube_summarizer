@@ -19,6 +19,7 @@ The YouTube Summarizer is a tool that allows users to summarize the content of Y
 ## Installation
 
 1. Install the package:
+
 ```bash
 pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/youtube_summarizer/pypi/simple
 ```
@@ -27,9 +28,9 @@ pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/you
 
 1. Run the application:
 
-    ```bash
-    summarize
-    ```
+   ```bash
+   summarize
+   ```
 
 2. Enter the URL of the YouTube video you want to summarize.
 
