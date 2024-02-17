@@ -1,12 +1,11 @@
 import pytest
+import youtube_cheatsheet.cli
 from returns.result import Failure, Success
-
-import src.cli
 
 
 def test_function_succeeds(mocker):
     """
-    Verify that the `src.cli.get_transcript()` function returns successful results.
+    Verify that the `youtube_cheatsheet.cli.get_transcript()` function returns successful results.
 
     Args:
         mocker: Instance of mocker object from the pytest-mock library.
@@ -14,12 +13,14 @@ def test_function_succeeds(mocker):
     Returns:
         None
     """
-    mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
+    mock_transcript_get_transcript = mocker.patch(
+        "youtube_cheatsheet.transcript.get_transcript"
+    )
     mock_transcript_get_transcript.return_value = Success("foo")
     mock_youtube_video = mocker.patch("pytube.YouTube")
     mock_youtube_video.video_id = "12345"
 
-    assert src.cli.get_transcript(mock_youtube_video) == "foo"
+    assert youtube_cheatsheet.cli.get_transcript(mock_youtube_video) == "foo"
 
 
 @pytest.mark.parametrize(
@@ -39,17 +40,23 @@ def test_generation_succeeds(mocker, get_transcript_return_value):
         get_transcript_return_value = (1, "foo")
         test_generation_succeeds(mocker, get_transcript_return_value)
     """
-    mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
+    mock_transcript_get_transcript = mocker.patch(
+        "youtube_cheatsheet.transcript.get_transcript"
+    )
     mock_transcript_get_transcript.return_value = get_transcript_return_value
     mock_youtube_video = mocker.patch("pytube.YouTube")
     mock_youtube_video.video_id = "12345"
-    mock_fetch_youtube_audio = mocker.patch("src.transcript.fetch_youtube_audio")
+    mock_fetch_youtube_audio = mocker.patch(
+        "youtube_cheatsheet.transcript.fetch_youtube_audio"
+    )
     mock_fetch_youtube_audio.return_value = "foo"
-    mock_parse_youtube_audio = mocker.patch("src.transcript.parse_youtube_audio")
+    mock_parse_youtube_audio = mocker.patch(
+        "youtube_cheatsheet.transcript.parse_youtube_audio"
+    )
     mock_parse_youtube_audio.return_value = ""
 
-    with pytest.raises(src.exceptions.TranscriptGenerationFailedError):
-        src.cli.get_transcript(mock_youtube_video)
+    with pytest.raises(youtube_cheatsheet.exceptions.TranscriptGenerationFailedError):
+        youtube_cheatsheet.cli.get_transcript(mock_youtube_video)
 
 
 def test_generated_transcript_not_found(mocker):
@@ -60,33 +67,41 @@ def test_generated_transcript_not_found(mocker):
         mocker: A pytest-mock mocker object to create and handle mock objects.
 
     """
-    mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
+    mock_transcript_get_transcript = mocker.patch(
+        "youtube_cheatsheet.transcript.get_transcript"
+    )
     mock_transcript_get_transcript.return_value = Failure("foo")
     mock_youtube_video = mocker.patch("pytube.YouTube")
     mock_youtube_video.video_id = "12345"
-    mock_fetch_youtube_audio = mocker.patch("src.transcript.fetch_youtube_audio")
+    mock_fetch_youtube_audio = mocker.patch(
+        "youtube_cheatsheet.transcript.fetch_youtube_audio"
+    )
     mock_fetch_youtube_audio.return_value = "foo"
-    mock_parse_youtube_audio = mocker.patch("src.transcript.parse_youtube_audio")
+    mock_parse_youtube_audio = mocker.patch(
+        "youtube_cheatsheet.transcript.parse_youtube_audio"
+    )
     mock_parse_youtube_audio.return_value = ""
 
-    with pytest.raises(src.exceptions.TranscriptGenerationFailedError):
-        src.cli.get_transcript(mock_youtube_video)
+    with pytest.raises(youtube_cheatsheet.exceptions.TranscriptGenerationFailedError):
+        youtube_cheatsheet.cli.get_transcript(mock_youtube_video)
 
 
 def test_not_implemented_error(mocker):
     """
-    Test the behavior when the src.cli.get_transcript method is not implemented.
+    Test the behavior when the youtube_cheatsheet.cli.get_transcript method is not implemented.
 
     Args:
         mocker: an instance of the mocker class used for mocking
 
     Raises:
-        NotImplementedError: if the src.cli.get_transcript method is not implemented
+        NotImplementedError: if the youtube_cheatsheet.cli.get_transcript method is not implemented
     """
-    mock_transcript_get_transcript = mocker.patch("src.transcript.get_transcript")
+    mock_transcript_get_transcript = mocker.patch(
+        "youtube_cheatsheet.transcript.get_transcript"
+    )
     mock_transcript_get_transcript.return_value = (99, "foo")
     mock_youtube_video = mocker.patch("pytube.YouTube")
     mock_youtube_video.video_id = "12345"
 
     with pytest.raises(NotImplementedError):
-        src.cli.get_transcript(mock_youtube_video)
+        youtube_cheatsheet.cli.get_transcript(mock_youtube_video)

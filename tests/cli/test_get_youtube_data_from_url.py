@@ -1,6 +1,5 @@
 import pytest
-
-import src.cli
+import youtube_cheatsheet.cli
 
 
 @pytest.fixture()
@@ -32,10 +31,12 @@ def test_function_succeeds(mocker, url):
     Returns:
         None
     """
-    youtube_data = mocker.patch("src.youtube_data.get_youtube_data_from_url")
+    youtube_data = mocker.patch(
+        "youtube_cheatsheet.youtube_data.get_youtube_data_from_url"
+    )
     value = "return value"
     youtube_data.return_value = (0, value)
-    assert src.cli.get_youtube_data_from_url(url) == value
+    assert youtube_cheatsheet.cli.get_youtube_data_from_url(url) == value
 
 
 def test_function_fails(mocker, url):
@@ -50,8 +51,10 @@ def test_function_fails(mocker, url):
         ValueError: If the "get_youtube_data_from_url" function does not raise a ValueError.
 
     """
-    youtube_data = mocker.patch("src.youtube_data.get_youtube_data_from_url")
+    youtube_data = mocker.patch(
+        "youtube_cheatsheet.youtube_data.get_youtube_data_from_url"
+    )
     value = "return value"
     youtube_data.return_value = (1, value)
     with pytest.raises(ValueError):
-        src.cli.get_youtube_data_from_url(url)
+        youtube_cheatsheet.cli.get_youtube_data_from_url(url)

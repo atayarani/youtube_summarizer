@@ -1,26 +1,10 @@
-import typing
-
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-
-from src.cli import get_output
+from youtube_cheatsheet.cli import get_output
 
 
 class TestGetOutput:
-    """
-    Class for testing the `get_output` function.
-
-    Methods:
-    - test_title_only: Tests the `get_output` function with only the title parameter.
-    - test_title_and_metadata: Tests the `get_output` function with the title and metadata parameters.
-    - test_title_takeaways_and_metadata: Tests the `get_output` function with the title, metadata, and takeaways parameters.
-    - test_all_fields: Tests the `get_output` function with all parameters: title, metadata, takeaways, and summary.
-    - test_idempotent_get_output: Tests the idempotency of the `get_output` function.
-    - test_fuzz_get_output: Fuzz testing for the `get_output` function.
-
-    """
-
     def test_title_only(self) -> None:
         """Test for the `get_output` method with only the `title` parameter."""
         assert get_output("title", None, None, None) == "# title\n\n"
@@ -77,9 +61,9 @@ class TestGetOutput:
     def test_idempotent_get_output(
         self,
         title: str,
-        metadata: typing.Union[str, None],
-        takeaways: typing.Union[str, None],
-        summary: typing.Union[str, None],
+        metadata: str | None,
+        takeaways: str | None,
+        summary: str | None,
     ) -> None:
         """
         Test method for checking the idempotent behavior of the `get_output` function.
@@ -110,9 +94,9 @@ class TestGetOutput:
     def test_fuzz_get_output(
         self,
         title: str,
-        metadata: typing.Union[str, None],
-        takeaways: typing.Union[str, None],
-        summary: typing.Union[str, None],
+        metadata: str | None,
+        takeaways: str | None,
+        summary: str | None,
     ) -> None:
         """
         Test method for fuzz testing the `get_output` function.
@@ -124,4 +108,9 @@ class TestGetOutput:
             summary (Union[str, None]): The summary of the test case.
 
         """
-        get_output(title=title, metadata=metadata, takeaways=takeaways, summary=summary)
+        get_output(
+            title=title,
+            youtube_data_metadata=metadata,
+            output_takeaways=takeaways,
+            output_summary=summary,
+        )

@@ -2,8 +2,10 @@
 import re
 
 import pytest
-
-from src.exceptions import NoTranscriptFoundError, TranscriptsDisabledError
+from youtube_cheatsheet.exceptions import (
+    NoTranscriptFoundError,
+    TranscriptsDisabledError,
+)
 
 
 class TestNoTranscriptFound:

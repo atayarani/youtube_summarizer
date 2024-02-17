@@ -1,9 +1,8 @@
 import tempfile
-from typing import Tuple
 
-import langchain
 import youtube_transcript_api
 from langchain.docstore.document import Document
+from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import AssemblyAIAudioTranscriptLoader
 from pytube import YouTube
 from returns.result import Failure, Result, Success, safe
@@ -60,7 +59,7 @@ def generate_transcript(video: YouTube) -> Result[str, None]:
     return Success(transcript[0].page_content)
 
 
-def split(transcript: str) -> Tuple[int, Tuple[str, ...]]:
+def split(transcript: str) -> tuple[int, tuple[str, ...]]:
     """
     Split a transcript into chunks based on langchain splitter.
 
@@ -87,11 +86,9 @@ def split(transcript: str) -> Tuple[int, Tuple[str, ...]]:
         (1, ('The transcript must be specified.',))
 
     """
-    transcript_splitter = (
-        langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=10000,
-            chunk_overlap=0,
-        )
+    transcript_splitter = CharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=10000,
+        chunk_overlap=0,
     )
 
     chunks = transcript_splitter.split_text(transcript)

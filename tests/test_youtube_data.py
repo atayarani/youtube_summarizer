@@ -1,7 +1,6 @@
 import pytest
 import pytube
-
-from src.youtube_data import get_youtube_data_from_url
+from youtube_cheatsheet.youtube_data import get_youtube_data_from_url
 
 
 @pytest.fixture()

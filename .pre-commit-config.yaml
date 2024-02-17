@@ -1,26 +1,13 @@
 repos:
-  - repo: local
-    hooks:
-      - id: check-poetry
-        name: Poetry check
-        description: Validates the structure of the pyproject.toml file
-        entry: poetry check
-        language: system
-        pass_filenames: false
-        files: pyproject.toml
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
       - id: check-ast
       - id: no-commit-to-branch
       - id: end-of-file-fixer
-  - repo: https://github.com/psf/black
-    rev: 24.1.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.1
     hooks:
-      - id: black
-        language_version: python3
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ["--profile", "black", "--filter-files"]
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format

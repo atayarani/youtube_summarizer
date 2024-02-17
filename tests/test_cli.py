@@ -3,11 +3,15 @@
 import pathlib
 
 import pytest
+import youtube_cheatsheet.exceptions
 from returns.maybe import Nothing
+from returns.result import Failure, Success
 from typer.testing import CliRunner
-
-import src.exceptions
-from src.cli import app, split_transcript, write_file  # slugify_video_title,
+from youtube_cheatsheet.cli import (
+    app,
+    split_transcript,
+    write_file,
+)
 
 
 @pytest.fixture()
@@ -53,7 +57,7 @@ class TestSplitTranscript:
         Test that the function successfully splits the transcript into one chunk.
 
         Args:
-            mocker: The mocker object used for patching the "src.transcript.split" function.
+            mocker: The mocker object used for patching the "youtube_cheatsheet.transcript.split" function.
 
         Returns:
             The output of the split_transcript function when an empty string is passed as input.
@@ -61,7 +65,7 @@ class TestSplitTranscript:
         Raises:
             AssertionError: If the split_transcript function does not return the expected output.
         """
-        mock_transcript_split = mocker.patch("src.transcript.split")
+        mock_transcript_split = mocker.patch("youtube_cheatsheet.transcript.split")
         mock_transcript_split.return_value = (0, ("foo",))
 
         assert split_transcript("") == ("foo",)
@@ -71,7 +75,7 @@ class TestSplitTranscript:
         Test that the function successfully splits the transcript into two chunks.
 
         Args:
-            mocker: The mocker object used for patching the "src.transcript.split" function.
+            mocker: The mocker object used for patching the "youtube_cheatsheet.transcript.split" function.
 
         Returns:
             The output of the split_transcript function when an empty string is passed as input.
@@ -79,7 +83,7 @@ class TestSplitTranscript:
         Raises:
             AssertionError: If the split_transcript function does not return the expected output.
         """
-        mock_transcript_split = mocker.patch("src.transcript.split")
+        mock_transcript_split = mocker.patch("youtube_cheatsheet.transcript.split")
         mock_transcript_split.return_value = (0, ("foo", "bar"))
 
         assert split_transcript("") == ("foo", "bar")
@@ -94,7 +98,7 @@ class TestSplitTranscript:
         Raises:
             ValueError: If the function fails to split the transcript into any chunks.
         """
-        mock_transcript_split = mocker.patch("src.transcript.split")
+        mock_transcript_split = mocker.patch("youtube_cheatsheet.transcript.split")
         mock_transcript_split.return_value = (1, ())
 
         with pytest.raises(ValueError):
@@ -132,24 +136,13 @@ class TestWriteFile:
             assert file.read_text() == "bar"
 
     def test_function_fails(self, mocker, runner):
-        """
-        Test whether the function fails when given a runner.
-
-        Args:
-            mocker: The mocker object used for patching.
-            runner: The runner object to use for testing.
-
-        Returns:
-            None
-
-        Raises:
-            AssertionError: If any of the assertions fail.
-        """
         with runner.isolated_filesystem():
-            mock_validate_output_path = mocker.patch("src.cli.validate_output_path")
+            mock_validate_output_path = mocker.patch(
+                "youtube_cheatsheet.cli.validate_output_path"
+            )
             # file = pathlib.Path("foo.md")
             mock_validate_output_path.return_value = Nothing
-            with pytest.raises(src.exceptions.OutputPathValidationError):
+            with pytest.raises(youtube_cheatsheet.exceptions.OutputPathValidationError):
                 write_file("foo", "bar", pathlib.Path("/home"))
             # file = pathlib.Path("foo.md")
             # assert not file.exists()
@@ -183,10 +176,12 @@ class TestMain:
         Returns:
             None
         """
-        mock_get_youtube_data = mocker.patch("src.cli.get_youtube_data_from_url")
-        mocker.patch("src.cli.get_transcript")
-        mocker.patch("src.cli.split_transcript")
-        mocker.patch("src.metadata.set_metadata")
+        mock_get_youtube_data = mocker.patch(
+            "youtube_cheatsheet.cli.get_youtube_data_from_url"
+        )
+        mocker.patch("youtube_cheatsheet.cli.get_transcript")
+        mocker.patch("youtube_cheatsheet.cli.split_transcript")
+        mocker.patch("youtube_cheatsheet.metadata.set_metadata")
 
         result = runner.invoke(
             app, ["--no-takeaways", "--no-summary", "--no-metadata", url]
@@ -210,7 +205,9 @@ class TestMain:
         Returns:
             None
         """
-        mock_get_youtube_data = mocker.patch("src.cli.get_youtube_data_from_url")
+        mock_get_youtube_data = mocker.patch(
+            "youtube_cheatsheet.cli.get_youtube_data_from_url"
+        )
         mock_get_youtube_data.return_value = (1, "Invalid YouTube URL")
 
         result = runner.invoke(
@@ -218,6 +215,36 @@ class TestMain:
         )
 
         assert result.exit_code == 1
+
+    def test_handle_transcript_generation_success(self, mocker):
+        mock_get_youtube_data = mocker.patch(
+            "youtube_cheatsheet.cli.get_youtube_data_from_url"
+        )
+        mock_get_youtube_data.return_value = "YouTube Data"
+        mock_generate_transcript = mocker.patch(
+            "youtube_cheatsheet.transcript.generate_transcript"
+        )
+        mock_generate_transcript.return_value = Success("Transcript")
+        youtube_cheatsheet.cli.handle_transcript_generation(
+            mock_get_youtube_data, Success("Transcript")
+        )
+
+    def test_handle_transcript_generation_failure(self, mocker):
+        mock_get_youtube_data = mocker.patch(
+            "youtube_cheatsheet.cli.get_youtube_data_from_url"
+        )
+        mock_get_youtube_data.return_value = "YouTube Data"
+        mock_generate_transcript = mocker.patch(
+            "youtube_cheatsheet.transcript.generate_transcript"
+        )
+        mock_generate_transcript.return_value = Failure("Transcript")
+
+        with pytest.raises(
+            youtube_cheatsheet.exceptions.TranscriptGenerationFailedError
+        ):
+            youtube_cheatsheet.cli.handle_transcript_generation(
+                mock_get_youtube_data, Failure("Transcript")
+            )
 
     # @pytest.mark.parametrize(
     #     "parameters",
@@ -237,11 +264,11 @@ class TestMain:
     #         parameters: The list of parameters to be passed to the app in the test.
     #
     #     """
-    #     mocker.patch("src.cli.get_youtube_data_from_url")
-    #     mocker.patch("src.cli.get_transcript")
-    #     mocker.patch("src.cli.split_transcript")
-    #     mocker.patch("src.metadata.set_metadata")
-    #     mock_ai_content = mocker.patch("src.cli.get_ai_content")
+    #     mocker.patch("youtube_cheatsheet.cli.get_youtube_data_from_url")
+    #     mocker.patch("youtube_cheatsheet.cli.get_transcript")
+    #     mocker.patch("youtube_cheatsheet.cli.split_transcript")
+    #     mocker.patch("youtube_cheatsheet.metadata.set_metadata")
+    #     mock_ai_content = mocker.patch("youtube_cheatsheet.cli.get_ai_content")
     #
     #     result = runner.invoke(app, [*parameters, "--no-metadata", url])
     #
@@ -258,12 +285,12 @@ class TestMain:
     #         url: The URL of the YouTube video being tested.
     #
     #     """
-    #     mocker.patch("src.cli.get_youtube_data_from_url")
-    #     mocker.patch("src.cli.get_transcript")
-    #     mocker.patch("src.cli.split_transcript")
-    #     mocker.patch("src.metadata.set_metadata")
-    #     mock_slugify = mocker.patch("src.cli.slugify_video_title")
-    #     mock_write_file = mocker.patch("src.cli.write_file")
+    #     mocker.patch("youtube_cheatsheet.cli.get_youtube_data_from_url")
+    #     mocker.patch("youtube_cheatsheet.cli.get_transcript")
+    #     mocker.patch("youtube_cheatsheet.cli.split_transcript")
+    #     mocker.patch("youtube_cheatsheet.metadata.set_metadata")
+    #     mock_slugify = mocker.patch("youtube_cheatsheet.cli.slugify_video_title")
+    #     mock_write_file = mocker.patch("youtube_cheatsheet.cli.write_file")
     #
     #     with runner.isolated_filesystem():
     #         result = runner.invoke(

@@ -7,8 +7,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v5
-      - uses: abatilo/actions-poetry@v2
-      - run: poetry install
+      - name: Install the latest version of rye
+        uses: eifinger/setup-rye@v1
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: ${{ github.repository_owner }}

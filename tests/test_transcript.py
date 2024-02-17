@@ -2,8 +2,7 @@ import pytest
 import youtube_transcript_api
 from langchain.docstore.document import Document
 from returns.result import Failure, Success
-
-from src.transcript import generate_transcript, get_transcript, split
+from youtube_cheatsheet.transcript import generate_transcript, get_transcript, split
 
 
 class TestGetTranscript:
@@ -167,12 +166,13 @@ class TestGenerateTranscript:
         """
         # Mock fetch_youtube_audio function
         mock_fetch = mocker.patch(
-            "src.transcript.fetch_youtube_audio", return_value="audio_file_path"
+            "youtube_cheatsheet.transcript.fetch_youtube_audio",
+            return_value="audio_file_path",
         )
 
         # Mock parse_youtube_audio function
         mock_parse = mocker.patch(
-            "src.transcript.parse_youtube_audio",
+            "youtube_cheatsheet.transcript.parse_youtube_audio",
             return_value=[Document(page_content="Transcript content")],
         )
 
@@ -204,12 +204,13 @@ class TestGenerateTranscript:
         """
         # Mock fetch_youtube_audio function
         mocker.patch(
-            "src.transcript.fetch_youtube_audio", return_value="audio_file_path"
+            "youtube_cheatsheet.transcript.fetch_youtube_audio",
+            return_value="audio_file_path",
         )
 
         # Mock parse_youtube_audio function
         mocker.patch(
-            "src.transcript.parse_youtube_audio",
+            "youtube_cheatsheet.transcript.parse_youtube_audio",
             return_value=[Document(page_content="Transcript content")],
         )
 
@@ -240,12 +241,13 @@ class TestGenerateTranscript:
         """
         # Mock fetch_youtube_audio function
         mock_fetch = mocker.patch(
-            "src.transcript.fetch_youtube_audio", return_value="audio_file_path"
+            "youtube_cheatsheet.transcript.fetch_youtube_audio",
+            return_value="audio_file_path",
         )
 
         # Mock parse_youtube_audio function
         mock_parse = mocker.patch(
-            "src.transcript.parse_youtube_audio",
+            "youtube_cheatsheet.transcript.parse_youtube_audio",
             return_value=[Document(page_content="Transcript content")],
         )
 
@@ -284,11 +286,14 @@ class TestGenerateTranscript:
         """
         # Mock fetch_youtube_audio function
         mock_fetch = mocker.patch(
-            "src.transcript.fetch_youtube_audio", return_value="audio_file_path"
+            "youtube_cheatsheet.transcript.fetch_youtube_audio",
+            return_value="audio_file_path",
         )
 
         # Mock parse_youtube_audio function
-        mock_parse = mocker.patch("src.transcript.parse_youtube_audio", return_value=[])
+        mock_parse = mocker.patch(
+            "youtube_cheatsheet.transcript.parse_youtube_audio", return_value=[]
+        )
 
         # Create a mock YouTube object
         youtube_mock = mocker.Mock()
@@ -319,7 +324,7 @@ class TestGenerateTranscript:
 
         """
         mocker.patch(
-            "src.transcript.fetch_youtube_audio",
+            "youtube_cheatsheet.transcript.fetch_youtube_audio",
             side_effect=Exception("Video not available"),
         )
 

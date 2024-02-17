@@ -2,11 +2,10 @@ import pathlib
 
 import pytest
 import pytest_mock
+import youtube_cheatsheet.cli
 from hypothesis import example, given
 from hypothesis import strategies as st
-from returns.maybe import Maybe, Nothing, Some
-
-import src.cli
+from returns.maybe import Maybe
 
 
 @pytest.mark.parametrize(
@@ -17,10 +16,10 @@ import src.cli
         "expected_result",
     ),
     [
-        pytest.param(False, True, True, Some(True), id="function_succeeds"),
-        pytest.param(True, True, True, Nothing, id="file_exists_error"),
-        pytest.param(False, False, True, Nothing, id="not_a_directory_error"),
-        pytest.param(False, True, False, Nothing, id="file_not_found_error"),
+        pytest.param(False, True, True, True, id="function_succeeds"),
+        pytest.param(True, True, True, False, id="file_exists_error"),
+        pytest.param(False, False, True, False, id="not_a_directory_error"),
+        pytest.param(False, True, False, False, id="file_not_found_error"),
     ],
 )
 def test(
@@ -48,7 +47,7 @@ def test(
     dir_path.is_dir.return_value = dir_path_is_dir
     dir_path.exists.return_value = dir_path_exists
 
-    result = src.cli.validate_output_path(file_path, dir_path)
+    result = youtube_cheatsheet.cli.validate_output_path(file_path, dir_path)
 
     assert type(result) == type(expected_result)
 
@@ -67,8 +66,12 @@ def test_idempotent_validate_output_path(
         dir_path: A `pathlib.Path` object representing the directory path to validate.
 
     """
-    result = src.cli.validate_output_path(file_path=file_path, dir_path=dir_path)
-    repeat = src.cli.validate_output_path(file_path=file_path, dir_path=dir_path)
+    result = youtube_cheatsheet.cli.validate_output_path(
+        file_path=file_path, dir_path=dir_path
+    )
+    repeat = youtube_cheatsheet.cli.validate_output_path(
+        file_path=file_path, dir_path=dir_path
+    )
     assert result == repeat, (result, repeat)
 
 
@@ -84,4 +87,4 @@ def test_fuzz_validate_output_path(
         dir_path: A `pathlib.Path` object representing the directory path to be validated.
 
     """
-    src.cli.validate_output_path(file_path=file_path, dir_path=dir_path)
+    youtube_cheatsheet.cli.validate_output_path(file_path=file_path, dir_path=dir_path)

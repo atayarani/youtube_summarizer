@@ -1,30 +1,19 @@
 import os
 
 import pytest
+import youtube_cheatsheet.exceptions
 from langchain_core.messages import SystemMessage
 from returns.result import Failure, Success
-
-import src.exceptions
-from src.ai import openai_chat_stream, validate_chat_inputs
+from youtube_cheatsheet.ai import openai_chat_stream, validate_chat_inputs
 
 
 class TestAI:
-    """
-    Test the openai_chat method when it successfully calls the openai_chat method.
-
-    :param mocker: The mocker instance for pytest.
-
-    """
-
     def test_openai_chat_stream_success(self, mocker):
-        """
-        Tests the success case of the `openai_chat_stream` method.
-
-        Args:
-            mocker: The `mocker` object used for patching the `ChatOpenAI` method.
-
-        """
         mock_chat_open_ai = mocker.patch("langchain_openai.ChatOpenAI")
+        mock_validate_chat_inputs = mocker.patch(
+            "youtube_cheatsheet.ai.validate_chat_inputs"
+        )
+        mock_validate_chat_inputs.return_value = Success(True)
         transcript_chunks = ("baz", "qux")
 
         openai_chat_stream(
@@ -42,27 +31,7 @@ class TestAI:
         )
 
     def test_openai_chat_stream_model_empty(self):
-        """
-        Test case for openai_chat_stream() when model parameter is empty.
-
-        This test case verifies that when the model parameter is empty,
-        a ValueError is raised. It uses pytest.raises() to assert that a
-        ValueError exception is raised when the method is called with an
-        empty model parameter.
-
-        Parameters:
-        - self: The instance of the test class.
-
-        Return:
-        - None
-
-        Raises:
-        - ValueError: If the model parameter is empty.
-
-        Example:
-        >>> test_openai_chat_stream_model_empty(self)
-        """
-        with pytest.raises(src.exceptions.InvalidModelError):
+        with pytest.raises(youtube_cheatsheet.exceptions.InvalidModelError):
             openai_chat_stream(
                 SystemMessage(content="foo"),
                 model="",
@@ -73,12 +42,12 @@ class TestAI:
             )
 
     def test_openai_chat_stream_invalid_chat(self, mocker):
-        mock_validate = mocker.patch("src.ai.validate_chat_inputs")
+        mock_validate = mocker.patch("youtube_cheatsheet.ai.validate_chat_inputs")
         mock_validate.return_value = Failure(None)
 
         system_message = SystemMessage(content="Invalid message")
         transcript_chunks = ("Hello", "How are you")
-        result = src.ai.openai_chat_stream(
+        result = youtube_cheatsheet.ai.openai_chat_stream(
             system_message,
             model="gpt-3.5-turbo-16k",
             transcript_chunks=transcript_chunks,
