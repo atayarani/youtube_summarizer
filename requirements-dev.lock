@@ -236,12 +236,15 @@ text-unidecode==1.3
     # via python-slugify
 tiktoken==0.5.2
     # via langchain-openai
+toml-sort==0.23.1
 tomli==2.0.1
     # via coverage
     # via mypy
     # via pyproject-api
     # via pytest
     # via tox
+tomlkit==0.12.3
+    # via toml-sort
 toolz==0.12.1
     # via youtube-cheatsheet
 tox==4.12.1

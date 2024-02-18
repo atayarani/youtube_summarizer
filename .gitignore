@@ -162,3 +162,5 @@ cython_debug/
 .vscode
 .idea
 results/pytest.xml
+
+megalinter-reports/

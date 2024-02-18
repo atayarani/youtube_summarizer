@@ -7,11 +7,7 @@ import youtube_cheatsheet.exceptions
 from returns.maybe import Nothing
 from returns.result import Failure, Success
 from typer.testing import CliRunner
-from youtube_cheatsheet.cli import (
-    app,
-    split_transcript,
-    write_file,
-)
+from youtube_cheatsheet.cli import app, split_transcript, write_file
 
 
 @pytest.fixture()

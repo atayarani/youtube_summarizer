@@ -5,17 +5,16 @@ from typing import Annotated, Optional
 
 import slugify
 import typer
-from jinja2 import Environment, FileSystemLoader, Template
-from langchain_core.messages import SystemMessage
-from pytube import YouTube
-from returns.maybe import Maybe
-from returns.result import Failure, Result, Success
-
 import youtube_cheatsheet.ai
 import youtube_cheatsheet.exceptions
 import youtube_cheatsheet.metadata
 import youtube_cheatsheet.transcript
 import youtube_cheatsheet.youtube_data
+from jinja2 import Environment, FileSystemLoader, Template
+from langchain_core.messages import SystemMessage
+from pytube import YouTube
+from returns.maybe import Maybe
+from returns.result import Failure, Result, Success
 
 app: typer.Typer = typer.Typer(
     help="AI Assistant for YouTube videos", rich_markup_mode="rich"
@@ -85,9 +84,11 @@ def main(
 
     output = get_output(
         metadata_info["title"],
-        youtube_data_metadata=youtube_cheatsheet.metadata.metadata_string(metadata_info)
-        if metadata
-        else None,
+        youtube_data_metadata=(
+            youtube_cheatsheet.metadata.metadata_string(metadata_info)
+            if metadata
+            else None
+        ),
         output_takeaways=takeaway_content if takeaway_content else None,
         output_summary=summary_content if summary else None,
     )
