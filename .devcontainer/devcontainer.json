@@ -1,0 +1,17 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+  "name": "Python 3",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postStartCommand": "rye sync",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "trunk.io",
+        "ms-azuretools.vscode-docker",
+      ]
+    }
+  }
+}

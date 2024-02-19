@@ -137,9 +137,9 @@ class TestWriteFile:
                 "youtube_cheatsheet.cli.validate_output_path"
             )
             # file = pathlib.Path("foo.md")
-            mock_validate_output_path.return_value = Nothing
+            mock_validate_output_path.return_value = None
             with pytest.raises(youtube_cheatsheet.exceptions.OutputPathValidationError):
-                write_file("foo", "bar", pathlib.Path("/home"))
+                write_file("foo", "bar", pathlib.Path("."))
             # file = pathlib.Path("foo.md")
             # assert not file.exists()
 

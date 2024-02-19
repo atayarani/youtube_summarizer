@@ -5,7 +5,7 @@ from typing import Annotated, Optional
 
 import slugify
 import typer
-from jinja2 import Environment, FileSystemLoader, Template
+from jinja2 import Environment, PackageLoader, Template
 from langchain_core.messages import SystemMessage
 from pytube import YouTube
 from returns.maybe import Maybe
@@ -99,9 +99,7 @@ def main(
 
 def setup_jinja_env() -> Environment:
     return Environment(
-        loader=FileSystemLoader(
-            pathlib.Path(__file__).parents[2].joinpath("templates")
-        ),
+        loader=PackageLoader("youtube_cheatsheet"),
         autoescape=True,
     )
 
@@ -130,8 +128,8 @@ def create_file_path(filename: str, path: pathlib.Path) -> pathlib.Path:
 def write_file(title: str, content: str, path: pathlib.Path) -> None:
     file = create_file_path(slugify.slugify(title), path)
 
-    result = validate_output_path(file, path)
-    if not result:
+
+    if not validate_output_path(file, path):
         raise youtube_cheatsheet.exceptions.OutputPathValidationError()
 
     file.write_text(content)

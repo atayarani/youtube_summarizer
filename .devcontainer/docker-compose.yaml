@@ -1,0 +1,8 @@
+services:
+  devcontainer:
+    tty: true
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ../..:/workspaces:cached

@@ -6,7 +6,7 @@ description = "A commandline application to summarize youtube videos"
 authors = [{ name = "atayarani" }]
 readme = "README.md"
 classifiers = [
-  "Development Status :: 3 - Alpha",
+  "Development Status :: 2 - Pre-Alpha",
   "Environment :: Console",
   "Natural Language :: English",
   "Operating System :: OS Independent",
@@ -68,11 +68,12 @@ dev-dependencies = [
   "pytest-cov~=4.1.0",
   "pytest-mock~=3.12.0",
   "hypothesis[codemods]~=6.97.4",
-  "pytest-spec~=3.2.0",
-  "tox>=4.12.1",
+  "pytest-spec>=3.2.0",
+  "tox>=4.13.0",
   "ruff-lsp>=0.0.52",
   "pytest-ruff>=0.2.1",
   "toml-sort>=0.23.1",
+  "pytest-coverage>=0.0",
 ]
 
 [tool.rye.scripts]

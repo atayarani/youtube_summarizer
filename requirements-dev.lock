@@ -182,6 +182,10 @@ pytest==7.4.4
     # via pytest-cov
     # via pytest-mock
 pytest-cov==4.1.0
+    # via pytest-cover
+pytest-cover==3.0.0
+    # via pytest-coverage
+pytest-coverage==0.0
 pytest-mock==3.12.0
 pytest-ruff==0.2.1
 pytest-spec==3.2.0
@@ -247,7 +251,7 @@ tomlkit==0.12.3
     # via toml-sort
 toolz==0.12.1
     # via youtube-cheatsheet
-tox==4.12.1
+tox==4.13.0
 tox-rye @ git+https://github.com/bluss/tox-rye@d1348e996d642e947cd0fb158ecdbcfe0f386af3
     # via youtube-cheatsheet
 tqdm==4.66.2
