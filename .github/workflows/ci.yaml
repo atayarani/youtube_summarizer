@@ -15,6 +15,7 @@ jobs:
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: ${{ github.repository_owner }}
+      - run: rye sync
       - name: Do testing stuff
         run: rye run python -m pytest --junit-xml=./results/pytest.xml --cov=./ --cov-report xml -v
       - name: Push result to Testspace server
