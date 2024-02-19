@@ -5,16 +5,17 @@ from typing import Annotated, Optional
 
 import slugify
 import typer
-import youtube_cheatsheet.ai
-import youtube_cheatsheet.exceptions
-import youtube_cheatsheet.metadata
-import youtube_cheatsheet.transcript
-import youtube_cheatsheet.youtube_data
 from jinja2 import Environment, FileSystemLoader, Template
 from langchain_core.messages import SystemMessage
 from pytube import YouTube
 from returns.maybe import Maybe
 from returns.result import Failure, Result, Success
+
+import youtube_cheatsheet.ai
+import youtube_cheatsheet.exceptions
+import youtube_cheatsheet.metadata
+import youtube_cheatsheet.transcript
+import youtube_cheatsheet.youtube_data
 
 app: typer.Typer = typer.Typer(
     help="AI Assistant for YouTube videos", rich_markup_mode="rich"
@@ -34,7 +35,7 @@ def main(
         bool, typer.Option(help="Whether or not to include video metadata")
     ] = True,
     path: Annotated[
-        Optional[pathlib.Path],  # noqa:UP007
+        Optional[pathlib.Path],
         typer.Option(help="The path to write the output file to"),
     ] = None,
 ) -> None:

@@ -1,6 +1,9 @@
 name: CI
 on:
   push:
+
+permissions: read-all
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,7 +16,7 @@ jobs:
         with:
           domain: ${{ github.repository_owner }}
       - name: Do testing stuff
-        run: poetry run pytest --junit-xml=./results/pytest.xml --cov=./ --cov-report xml -v
+        run: rye run python -m pytest --junit-xml=./results/pytest.xml --cov=./ --cov-report xml -v
       - name: Push result to Testspace server
         run: |
           testspace ./results/*.xml coverage.xml

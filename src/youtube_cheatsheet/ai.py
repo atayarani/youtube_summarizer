@@ -1,9 +1,10 @@
 import os
 
 import langchain_openai
-import youtube_cheatsheet.exceptions
 from langchain_core.messages import HumanMessage, SystemMessage
 from returns.result import Failure, Result, Success
+
+import youtube_cheatsheet.exceptions
 
 
 def openai_chat_stream(

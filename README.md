@@ -1,14 +1,15 @@
+# YouTube Summarizer
+
 [![Test Coverage](https://api.codeclimate.com/v1/badges/43056a39f0dc01e73314/test_coverage)](https://codeclimate.com/github/atayarani/youtube_summarizer/test_coverage)
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/43056a39f0dc01e73314/maintainability)](https://codeclimate.com/github/atayarani/youtube_summarizer/maintainability)
-
-# YouTube Summarizer
 
 This is a codebase for a YouTube summarizer application.
 
 ## Description
 
-The YouTube Summarizer is a tool that allows users to summarize the content of YouTube videos. It uses natural language processing techniques to extract key information from the video and generate a concise summary.
+The YouTube Summarizer is a tool that allows users to summarize the content of YouTube videos. It uses natural language
+processing techniques to extract key information from the video and generate a concise summary.
 
 ## Features
 

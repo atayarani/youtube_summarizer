@@ -1,0 +1,66 @@
+# This file controls the behavior of Trunk: https://docs.trunk.io/cli
+# To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
+version: 0.1
+cli:
+  version: 1.20.0
+  sha256:
+    darwin_arm64: 2e13a3af548d1971769634316ae156da8d74d048cb200c2a6c15192d0ebbf852
+    darwin_x86_64: 0ee3e92b14f4021d1a8c376e56d7f3dccb63a5e145e72aa0d7e74818508d8794
+    linux_arm64: 2827a2e57d0f7469c3938c48d908dfb0660304a411bb35d8c9b755470e6b07ff
+    linux_x86_64: b7c27fb4f7e8dc086508e0e7aee827341255521fef8311dc53dbc95be889321b
+    mingw_x86_64: 7179323ac33240d8c21cce9185ceb7b062b5b743482f309915e3b8da5990b55f
+    windows_x86_64: 40b3fbe95b499559ca5b206cb811bf7ca1118bf95527a6b3d36973bc821efd64
+# Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
+plugins:
+  sources:
+    - id: trunk
+      ref: v1.4.3
+      uri: https://github.com/trunk-io/plugins
+# Many linters and tools depend on runtimes - configure them here. (https://docs.trunk.io/runtimes)
+runtimes:
+  enabled:
+    - go@1.21.0
+    - node@18.12.1
+    - python@3.10.8
+# This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
+lint:
+  enabled:
+    - trunk-toolbox@0.2.0
+    - pre-commit-hooks@4.5.0:
+        commands:
+          - check-ast
+          - no-commit-to-branch
+          - end-of-file-fixer
+    - mypy@1.5.1!: # this version required by `returns`
+        packages:
+          - returns
+          - types-python-slugify
+    - actionlint@1.6.26
+    - bandit@1.7.7
+    - checkov@3.2.21
+    - git-diff-check
+    - markdownlint@0.39.0
+    - prettier@3.2.5
+    - ruff@0.2.1
+    - shellcheck@0.9.0
+    - shfmt@3.6.0
+    - taplo@0.8.1
+    - trivy@0.49.1
+    - trufflehog@3.67.6
+    - yamllint@1.35.0
+  disabled:
+    - black
+    - isort
+  ignore:
+    - linters: [bandit]
+      paths: [tests/**]
+    - linters: [mypy]
+      paths: [build/**]
+    - linters: [markdownlint]
+      paths: [LICENSE.md]
+actions:
+  enabled:
+    - trunk-announce
+    - trunk-check-pre-push
+    - trunk-fmt-pre-commit
+    - trunk-upgrade-available
