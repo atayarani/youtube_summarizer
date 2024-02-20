@@ -21,6 +21,7 @@ extend-select = [
   "SIM",  # flake8-simplify
   "TRY",  # tryceratops
   "UP",   # pyupgrade
+  "ERA",  # eradicate
 ]
 ignore = [
   "D100",   # Missing docstring in public module

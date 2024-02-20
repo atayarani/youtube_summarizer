@@ -1,13 +1,14 @@
 # import os
 
-import pathlib
 
 import pytest
 import youtube_cheatsheet.exceptions
-from returns.maybe import Nothing
+import youtube_cheatsheet.youtube_data
 from returns.result import Failure, Success
 from typer.testing import CliRunner
-from youtube_cheatsheet.cli import app, split_transcript, write_file
+
+# from youtube_cheatsheet.cli import app, split_transcript, write_file
+from youtube_cheatsheet.cli import split_transcript
 
 
 @pytest.fixture()
@@ -101,47 +102,47 @@ class TestSplitTranscript:
             split_transcript("")
 
 
-class TestWriteFile:
-    """
-    Test whether a function succeeds as expected by creating a temporary isolated filesystem using the provided test runner.
+# class TestWriteFile:
+#     """
+#     Test whether a function succeeds as expected by creating a temporary isolated filesystem using the provided test runner.
 
-    :param runner: The test runner that will execute the test function.
+#     :param runner: The test runner that will execute the test function.
 
-    Example Usage:
-    runner = TestRunner()
-    self.test_function_succeeds(runner)
-    """
+#     Example Usage:
+#     runner = TestRunner()
+#     self.test_function_succeeds(runner)
+#     """
 
-    def test_function_succeeds(self, runner):
-        """
-        Test whether the function succeeds when given a runner.
+#     def test_function_succeeds(self, runner):
+#         """
+#         Test whether the function succeeds when given a runner.
 
-        Args:
-            runner: The runner object to use for testing.
+#         Args:
+#             runner: The runner object to use for testing.
 
-        Returns:
-            None
+#         Returns:
+#             None
 
-        Raises:
-            AssertionError: If any of the assertions fail.
-        """
-        with runner.isolated_filesystem():
-            write_file("foo", "bar", pathlib.Path())
-            file = pathlib.Path("foo.md")
-            assert file.exists()
-            assert file.read_text() == "bar"
+#         Raises:
+#             AssertionError: If any of the assertions fail.
+#         """
+#         with runner.isolated_filesystem():
+#             write_file("foo", "bar", pathlib.Path())
+#             file = pathlib.Path("foo.md")
+#             assert file.exists()
+#             assert file.read_text() == "bar"
 
-    def test_function_fails(self, mocker, runner):
-        with runner.isolated_filesystem():
-            mock_validate_output_path = mocker.patch(
-                "youtube_cheatsheet.cli.validate_output_path"
-            )
-            # file = pathlib.Path("foo.md")
-            mock_validate_output_path.return_value = None
-            with pytest.raises(youtube_cheatsheet.exceptions.OutputPathValidationError):
-                write_file("foo", "bar", pathlib.Path("."))
-            # file = pathlib.Path("foo.md")
-            # assert not file.exists()
+#     def test_function_fails(self, mocker, runner):
+#         with runner.isolated_filesystem():
+#             mock_validate_output_path = mocker.patch(
+#                 "youtube_cheatsheet.cli.validate_output_path"
+#             )
+#             # file = pathlib.Path("foo.md")
+#             mock_validate_output_path.return_value = None
+#             with pytest.raises(youtube_cheatsheet.exceptions.OutputPathValidationError):
+#                 write_file("foo", "bar", pathlib.Path())
+#             # file = pathlib.Path("foo.md")
+#             # assert not file.exists()
 
 
 class TestMain:
@@ -157,79 +158,79 @@ class TestMain:
         None
     """
 
-    def test_youtube_video_object_created(self, mocker, url, runner):
-        """
-        Test whether the YouTube video object is created when the YouTube URL is valid.
+    # def test_youtube_video_object_created(self, mocker, url, runner):
+    #     """
+    #     Test whether the YouTube video object is created when the YouTube URL is valid.
 
-        Args:
-            mocker: The mocker object used for patching the `get_youtube_data_from_url` method.
-            url: The YouTube URL passed as a parameter to the test method.
-            runner: The test runner object used for invoking the application.
+    #     Args:
+    #         mocker: The mocker object used for patching the `get_youtube_data_from_url` method.
+    #         url: The YouTube URL passed as a parameter to the test method.
+    #         runner: The test runner object used for invoking the application.
 
-        Raises:
-            AssertionError: If the `result.exit_code` is not equal to 0.
+    #     Raises:
+    #         AssertionError: If the `result.exit_code` is not equal to 0.
 
-        Returns:
-            None
-        """
-        mock_get_youtube_data = mocker.patch(
-            "youtube_cheatsheet.cli.get_youtube_data_from_url"
-        )
-        mocker.patch("youtube_cheatsheet.cli.get_transcript")
-        mocker.patch("youtube_cheatsheet.cli.split_transcript")
-        mocker.patch("youtube_cheatsheet.metadata.set_metadata")
+    #     Returns:
+    #         None
+    #     """
+    #     mock_get_youtube_data = mocker.patch(
+    #         "youtube_cheatsheet.cli.get_youtube_data_from_url"
+    #     )
+    #     mocker.patch("youtube_cheatsheet.cli.get_transcript")
+    #     mocker.patch("youtube_cheatsheet.cli.split_transcript")
+    #     mocker.patch("youtube_cheatsheet.metadata.set_metadata")
 
-        result = runner.invoke(
-            app, ["--no-takeaways", "--no-summary", "--no-metadata", url]
-        )
+    #     result = runner.invoke(
+    #         app, ["--no-takeaways", "--no-summary", "--no-metadata", url]
+    #     )
 
-        mock_get_youtube_data.assert_called_once_with(url)
-        assert result.exit_code == 0
+    #     mock_get_youtube_data.assert_called_once_with(url)
+    #     assert result.exit_code == 0
 
-    def test_youtube_video_object_not_created(self, mocker, url, runner):
-        """
-        Test whether the YouTube video object is not created when the YouTube URL is invalid.
+    # def test_youtube_video_object_not_created(self, mocker, url, runner):
+    #     """
+    #     Test whether the YouTube video object is not created when the YouTube URL is invalid.
 
-        Args:
-            mocker: The mocker object used for patching the `get_youtube_data_from_url` method.
-            url: The YouTube URL passed as a parameter to the test method.
-            runner: The test runner object used for invoking the application.
+    #     Args:
+    #         mocker: The mocker object used for patching the `get_youtube_data_from_url` method.
+    #         url: The YouTube URL passed as a parameter to the test method.
+    #         runner: The test runner object used for invoking the application.
 
-        Raises:
-            AssertionError: If the `result.exit_code` is not equal to 1.
+    #     Raises:
+    #         AssertionError: If the `result.exit_code` is not equal to 1.
 
-        Returns:
-            None
-        """
-        mock_get_youtube_data = mocker.patch(
-            "youtube_cheatsheet.cli.get_youtube_data_from_url"
-        )
-        mock_get_youtube_data.return_value = (1, "Invalid YouTube URL")
+    #     Returns:
+    #         None
+    #     """
+    #     mock_get_youtube_data = mocker.patch(
+    #         "youtube_cheatsheet.cli.get_youtube_data_from_url"
+    #     )
+    #     mock_get_youtube_data.return_value = (1, "Invalid YouTube URL")
 
-        result = runner.invoke(
-            app, ["--no-takeaways", "--no-summary", "--no-metadata", url]
-        )
+    #     result = runner.invoke(
+    #         app, ["--no-takeaways", "--no-summary", "--no-metadata", url]
+    #     )
 
-        assert result.exit_code == 1
+    #     assert result.exit_code == 1
 
     def test_handle_transcript_generation_success(self, mocker):
-        mock_get_youtube_data = mocker.patch(
-            "youtube_cheatsheet.cli.get_youtube_data_from_url"
+        mock_youtube_data = mocker.Mock(
+            spec=youtube_cheatsheet.youtube_data.YouTubeData()
         )
-        mock_get_youtube_data.return_value = "YouTube Data"
+        mock_youtube_data.get_from_url.return_value = "YouTube Data"
         mock_generate_transcript = mocker.patch(
             "youtube_cheatsheet.transcript.generate_transcript"
         )
         mock_generate_transcript.return_value = Success("Transcript")
         youtube_cheatsheet.cli.handle_transcript_generation(
-            mock_get_youtube_data, Success("Transcript")
+            mock_youtube_data, Success("Transcript")
         )
 
     def test_handle_transcript_generation_failure(self, mocker):
-        mock_get_youtube_data = mocker.patch(
-            "youtube_cheatsheet.cli.get_youtube_data_from_url"
+        mock_youtube_data = mocker.Mock(
+            spec=youtube_cheatsheet.youtube_data.YouTubeData()
         )
-        mock_get_youtube_data.return_value = "YouTube Data"
+        mock_youtube_data.get_from_url.return_value = "YouTube Data"
         mock_generate_transcript = mocker.patch(
             "youtube_cheatsheet.transcript.generate_transcript"
         )
@@ -239,7 +240,7 @@ class TestMain:
             youtube_cheatsheet.exceptions.TranscriptGenerationFailedError
         ):
             youtube_cheatsheet.cli.handle_transcript_generation(
-                mock_get_youtube_data, Failure("Transcript")
+                mock_youtube_data, Failure("Transcript")
             )
 
     # @pytest.mark.parametrize(

@@ -1,0 +1,25 @@
+{
+  "threshold": 0,
+  "reporters": ["markdown"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/.tox/**",
+    "**/.trunk/**",
+    "**/.git/**",
+    "**/build/**",
+    "**/.venv/**",
+    "**/report/**",
+    "**/*cache*/**",
+    "**/*.json",
+    "**/*.yaml",
+    "**/*.yml",
+    "**/*.md",
+    "**/*.html",
+    "**/*.xml",
+    "**/*.jpg",
+    "**/*.png",
+    "**/*.svg",
+    "**/*.zip",
+    "**/*.bin"
+  ]
+}

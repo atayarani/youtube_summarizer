@@ -214,7 +214,7 @@ returns==0.22.0
     # via youtube-cheatsheet
 rich==13.7.0
     # via youtube-cheatsheet
-ruff==0.1.15
+ruff==0.2.2
     # via pytest-ruff
     # via ruff-lsp
 ruff-lsp==0.0.52

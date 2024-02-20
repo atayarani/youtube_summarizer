@@ -1,86 +1,84 @@
+import copy
+from datetime import datetime
+
 import pytube
+import pytube.exceptions
+from returns.maybe import Maybe, Nothing, Some
+
+import youtube_cheatsheet.exceptions
 
 
-def get_youtube_data_from_url(url: str) -> tuple[int, pytube.YouTube | str]:
-    """
-    Get a YouTube video object from the given URL.
+class YouTubeData:
+    def __init__(self) -> None:
+        self._video: pytube.YouTube | None = None
+        self._metadata: dict | None = None
 
-    Args:
-        url: The URL of the YouTube video.
+    def get_from_url(self, url: str) -> pytube.YouTube:
+        """Get a YouTube video object from the given URL."""
 
-    Returns:
-        A tuple containing an integer status code and either a pytube.YouTube object representing the video or a string with an error message.
+        try:
+            video = pytube.YouTube(url.split("&")[0])
+            video.check_availability()  # pragma: no cover
+        except pytube.exceptions.RegexMatchError as err:
+            raise youtube_cheatsheet.exceptions.InvalidURLError from err
 
-    Raises:
-        None
+        self.video = video
+        return video
 
-    Example:
-        url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-        status, data = get_youtube_data_from_url(url)
-        if status == 0:
-            print(f"Video title: {data.title}")
-        else:
-            print(f"Error: {data}")
-    """
-    try:
-        video = pytube.YouTube(url.split("&")[0])
-        video.check_availability()  # pragma: no cover
-    except pytube.exceptions.RegexMatchError:
-        return 1, "Invalid YouTube URL"
-    else:
-        return 0, video
+    @property
+    def metadata(
+        self,
+    ) -> dict[str, str | None] | youtube_cheatsheet.exceptions.MissingMetadataError:
+        video = self._validate_video()
+        if video is None:
+            return youtube_cheatsheet.exceptions.MissingMetadataError()
 
+        video.streams.first()
 
-# class YouTubeData:
-#     # def __init__(self, url: str):
-#     #     """
-#     #     Initialize the object with the given URL.
+        return {
+            "title": video.title,
+            "publish_date": self._format_publish_date(video.publish_date),
+            "author": video.author,
+            "url": video.watch_url,
+            "description": self._format_description(video.description),
+            "video_id": video.video_id,
+        }
 
-#     #     Args:
-#     #         url (str): The URL of the video.
-#     #     """
-#     #     self._url = url
-#     #     self.video: YouTube = self._get_video()
+    def metadata_string(self, add_metadata: bool) -> str | None:
+        metadata_info = self._validate_metadata()
+        return (
+            Maybe.from_optional(Some if add_metadata else Nothing)
+            .from_optional(metadata_info)
+            .bind_optional(lambda info: self._format_metadata(info))
+            .value_or(None)
+        )
 
-#     # @property
-#     # def url(self) -> str:
-#     #     return self._url
+    def _validate_video(self) -> pytube.YouTube | None:
+        if self.video is None:
+            return None
+        if self.video.title is None:
+            return None
+        return copy.copy(self.video)
 
-#     @property
-#     def metadata(self) -> Metadata:
-#         return Metadata(
-#             title=self.video.title,
-#             publish_date=self.video.publish_date.strftime("%Y-%m-%d"),
-#             author=self.video.author,
-#             url=self.video.watch_url,
-#             description=self.description,
-#             video_id=self.video.video_id,
-#         )
+    def _validate_metadata(self) -> dict[str, str | None] | None:
+        if isinstance(
+            self.metadata, youtube_cheatsheet.exceptions.MissingMetadataError
+        ):
+            return None
+        return self.metadata
 
-#     # @lru_cache
-#     # def _get_video(self) -> YouTube:
-#     #     """
-#     #     Set the video property with the given URL.
+    @staticmethod
+    def _format_metadata(info: dict[str, str | None]) -> str:
+        return "\n".join([f"{k}: {v}" for k, v in info.items() if k != "video_id"])  # type:ignore
 
-#     #     Args:
-#     #         url (str): The URL of the video.
+    # @staticmethod
+    def _format_publish_date(self, publish_date: datetime | None) -> str | None:
+        return (
+            Maybe.from_optional(publish_date)
+            .bind_optional(lambda date: date.strftime("%Y-%m-%d"))
+            .value_or(None)
+        )
 
-#     #     Returns:
-#     #         YouTube: The YouTube object representing the video.
-
-#     #     Raises:
-#     #         RegexMatchError: If the URL does not match the expected format.
-#     #     """
-#     #     try:
-#     #         video = YouTube(self.url)
-#     #         video.check_availability()  # pragma: no cover
-#     #     except RegexMatchError:
-#     #         raise BadParameter("Invalid YouTube URL")
-
-#     # return video
-
-#     @property
-#     def description(self) -> str:
-#         """
-#         Get the description of the video as a single string.
-#         """
+    @staticmethod
+    def _format_description(description: str) -> str:
+        return "".join([f"\n\t{x}" for x in description.split("\n")])

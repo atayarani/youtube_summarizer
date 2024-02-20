@@ -5,34 +5,31 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders import AssemblyAIAudioTranscriptLoader
 from pytube import YouTube
-from returns.result import Failure, Result, Success, safe
+from returns.maybe import Maybe
+from returns.result import Failure, Result, Success
+from toolz import functoolz
 
 
-@safe(
-    exceptions=(
-        youtube_transcript_api._errors.NoTranscriptFound,
-        youtube_transcript_api._errors.TranscriptsDisabled,
-        youtube_transcript_api._errors.NoTranscriptAvailable,
+def get_transcript(video_id: str) -> str | None:
+    safe_function = functoolz.excepts(
+        (
+            youtube_transcript_api._errors.NoTranscriptFound,
+            youtube_transcript_api._errors.TranscriptsDisabled,
+            youtube_transcript_api._errors.NoTranscriptAvailable,
+        ),
+        lambda id: youtube_transcript_api.YouTubeTranscriptApi.get_transcript(id),
+        lambda _: None,
     )
-)
-def get_transcript(video_id: str) -> str:
-    """
-    Get the transcript for a given YouTube video.
 
-    Args:
-        video_id (str): The ID of the YouTube video for which the transcript is requested.
+    return (
+        Maybe.from_optional(safe_function(video_id))
+        .bind_optional(lambda transcript: " ".join(format_transcript(transcript)))
+        .value_or(None)
+    )
 
-    Returns:
-        str: The concatenated transcript of the video, converted from a list of transcript items.
 
-    Raises:
-        youtube_transcript_api._errors.NoTranscriptFound: If no transcript is found for the video.
-        youtube_transcript_api._errors.TranscriptsDisabled: If transcripts are disabled for the video.
-        youtube_transcript_api._errors.NoTranscriptAvailable: If no transcript is available for the video.
-
-    """
-    transcript = youtube_transcript_api.YouTubeTranscriptApi.get_transcript(video_id)
-    return " ".join([item["text"] for item in transcript])
+def format_transcript(transcript: dict) -> list[str]:
+    return [item["text"] for item in transcript]
 
 
 def generate_transcript(video: YouTube) -> Result[str, None]:
@@ -128,3 +125,58 @@ def parse_youtube_audio(audio_file: str) -> list[Document]:
     """
     loader = AssemblyAIAudioTranscriptLoader(file_path=audio_file)  # pragma: no cover
     return loader.load()  # pragma: no cover
+
+
+# def get_transcript(youtube_video: YouTube) -> str:
+#     """Retrieve the transcript for a given YouTube video."""
+#     result = fetch_transcript(youtube_video)
+#     return handle_result(result, youtube_video)
+
+
+# def fetch_transcript(youtube_video: YouTube) -> Result:
+#     return maybe_to_result(Maybe.from_optional(get_transcript(youtube_video.video_id)))
+
+
+# def handle_result(result: Result, youtube_video: YouTube) -> str:
+#     """Processes the result of a transcript fetch."""
+#     if not isinstance(result, Success | Failure):
+#         raise NotImplementedError(f"Unhandled result: {result}")
+
+#     if isinstance(result, Failure):
+#         print("No transcript found", file=stderr)
+#         return handle_transcript_generation(youtube_video, result)
+#     return result.unwrap()
+
+
+# def handle_transcript_generation(youtube_video: YouTube, result: Result) -> str:
+#     """Handles transcript generation in case of a fetch failure."""
+#     generate_result = youtube_cheatsheet.transcript.generate_transcript(youtube_video)
+#     if isinstance(generate_result, Failure):
+#         raise youtube_cheatsheet.exceptions.TranscriptGenerationFailedError(
+#             result.failure()
+#         )
+#     return generate_result.unwrap()
+
+
+# def split_transcript(transcript: str) -> tuple[str, ...]:
+#     """
+#     Split a transcript into multiple parts.
+
+#     :param transcript: str:
+#     :type transcript: str
+#     :param transcript: str:
+#     :param transcript: str:
+#     :returns: A tuple containing the split parts of the
+#     :rtype: Tuple[str, ...]
+#     :raises ValueError: If the split operation fails.
+
+#     Example:
+#     >>> transcript = "This is a transcript"
+#         >>> split_transcript(transcript)
+#         ("This is a transcript",)
+#     """
+#     result, value = youtube_cheatsheet.transcript.split(transcript)
+#     if result == 1:
+#         raise ValueError(value)
+
+#     return value

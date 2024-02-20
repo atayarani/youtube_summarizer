@@ -163,4 +163,4 @@ cython_debug/
 .idea
 results/pytest.xml
 
-megalinter-reports/
+report

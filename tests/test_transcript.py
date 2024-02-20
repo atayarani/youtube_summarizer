@@ -32,7 +32,7 @@ class TestGetTranscript:
         mock_transcript_api = mocker.patch(
             "youtube_transcript_api.YouTubeTranscriptApi"
         )
-        mock_transcript_api.get_transcript.side_effect = None
+        # mock_transcript_api.get_transcript.side_effect = None
         mock_transcript_api.get_transcript.return_value = [
             {"text": "bar"},
             {"text": "baz"},
@@ -42,7 +42,7 @@ class TestGetTranscript:
 
         mock_transcript_api.get_transcript.assert_called_once_with("foo")
 
-        assert value == Success("bar baz")
+        assert value == "bar baz"
 
     def test_not_found(self, mocker) -> None:
         """
@@ -78,7 +78,7 @@ class TestGetTranscript:
         result = get_transcript("foo")
 
         mock_transcript_api.get_transcript.assert_called_once_with("foo")
-        assert result.failure()
+        assert result is None
 
 
 class TestSplit:

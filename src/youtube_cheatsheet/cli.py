@@ -1,19 +1,18 @@
-import functools
 import pathlib
 from sys import stderr
 from typing import Annotated, Optional
 
-import slugify
 import typer
-from jinja2 import Environment, PackageLoader, Template
-from langchain_core.messages import SystemMessage
 from pytube import YouTube
+from returns.converters import maybe_to_result
 from returns.maybe import Maybe
+from returns.pipeline import flow
 from returns.result import Failure, Result, Success
 
-import youtube_cheatsheet.ai
+import youtube_cheatsheet.ai_providers.openai
 import youtube_cheatsheet.exceptions
 import youtube_cheatsheet.metadata
+import youtube_cheatsheet.output
 import youtube_cheatsheet.transcript
 import youtube_cheatsheet.youtube_data
 
@@ -41,121 +40,36 @@ def main(
 ) -> None:
     """
     Process YouTube videos and write the output to a file or stdout.
-
-    :param url: The URL of the YouTube video
-    :param takeaways: Whether to include key takeaways (default: True)
-    :param summary: Whether to include an article summary (default: True)
-    :param metadata: Whether to include video metadata (default: True)
-    :param path: The path to write the output file to (default: None)
     """
-    youtube_video = get_youtube_data_from_url(url)
-    transcript = get_transcript(youtube_video)
-    transcript_chunks = split_transcript(transcript)
-    metadata_info = youtube_cheatsheet.metadata.set_metadata(youtube_video)
+    youtube_video = youtube_cheatsheet.youtube_data.YouTubeData()
+    transcript_chunks = flow(
+        youtube_video.get_from_url(url), get_transcript, split_transcript
+    )
+    metadata_info = youtube_video.metadata
+    if isinstance(metadata_info, youtube_cheatsheet.exceptions.MissingMetadataError):
+        print(repr(metadata_info))
+        exit(1)
 
-    ai_content = functools.partial(
-        youtube_cheatsheet.ai.openai_chat_stream,
-        temperature=1.0,
-        transcript_chunks=transcript_chunks,
-    )
-    takeaways_message = SystemMessage(
-        content=(
-            "The user will provide a transcript.From the transcript, you will provide a bulleted list of "
-            f"key takeaways. At the top of the list, add a title: '## Key Takeaways — {metadata_info['title']}'"
-        )
-    )
-    summary_message = SystemMessage(
-        content=(
-            "The user will provide a transcript. Reformat the transcript into an in-depth "
-            "markdown blog post using sections and section headers."
-            f"Add a section title: '## Summary — {metadata_info['title']}'"
-        )
-    )
-
-    takeaway_content = (
-        Maybe.from_optional(takeaways_message if takeaways else None)
-        .bind_optional(lambda message: ai_content(system_message=message))
-        .value_or(None)
-    )
-    summary_content = (
-        Maybe.from_optional(summary_message if summary else None)
-        .bind_optional(lambda message: ai_content(system_message=message))
-        .value_or(None)
-    )
-
-    output = get_output(
-        metadata_info["title"],
-        youtube_data_metadata=(
-            youtube_cheatsheet.metadata.metadata_string(metadata_info)
-            if metadata
-            else None
+    # We pass the boolean values to the methods here, so we don't generate them
+    # if the template doesn't need them.  If we do it in the template, which
+    # was my original plan, then we may generate data from AI providers for
+    # no good reason.
+    output = youtube_cheatsheet.output.get_output(
+        metadata_info["title"],  # type: ignore
+        youtube_data_metadata=youtube_video.metadata_string(metadata),
+        output_takeaways=youtube_cheatsheet.ai_providers.openai.get_takeaways(
+            takeaways, transcript_chunks
         ),
-        output_takeaways=takeaway_content if takeaway_content else None,
-        output_summary=summary_content if summary else None,
+        output_summary=youtube_cheatsheet.ai_providers.openai.get_summary(
+            summary, transcript_chunks
+        ),
     )
 
-    write_file(metadata_info["title"], output, path) if path else print(output)
-
-
-def setup_jinja_env() -> Environment:
-    return Environment(
-        loader=PackageLoader("youtube_cheatsheet"),
-        autoescape=True,
-    )
-
-
-def get_template(env: Environment, template_name: str = "output.md.j2") -> Template:
-    return env.get_template(template_name)
-
-
-def get_output(
-    title: str,
-    youtube_data_metadata: str | None = None,
-    output_takeaways: str | None = None,
-    output_summary: str | None = None,
-) -> str:
-    output_dict = locals()
-    env = setup_jinja_env()
-    template = get_template(env)
-    return template.render(**output_dict)
-
-
-def create_file_path(filename: str, path: pathlib.Path) -> pathlib.Path:
-    # Separate the file creation process for better readability
-    return path.joinpath(filename).with_suffix(".md")
-
-
-def write_file(title: str, content: str, path: pathlib.Path) -> None:
-    file = create_file_path(slugify.slugify(title), path)
-
-
-    if not validate_output_path(file, path):
-        raise youtube_cheatsheet.exceptions.OutputPathValidationError()
-
-    file.write_text(content)
-
-
-def validate_output_path(file_path: pathlib.Path, dir_path: pathlib.Path) -> bool:
-    return dir_path.exists() and dir_path.is_dir() and not file_path.exists()
-
-
-def get_youtube_data_from_url(url: str) -> YouTube:
-    """
-    Return YouTube data from given URL.
-
-    :param url: str
-    :param url: str:
-    :param url: str:
-    :returns: A YouTube object containing the data of the YouTube video.
-    :raises ValueError: If the URL is invalid or the YouTube video data
-    :raises cannot: be fetched
-
-    """
-    result, value = youtube_cheatsheet.youtube_data.get_youtube_data_from_url(url)
-    if result == 0:
-        return value
-
-    raise ValueError(value)
+    youtube_cheatsheet.output.write_file(
+        metadata_info["title"],
+        output,
+        path,  # type: ignore
+    ) if path else print(output)
 
 
 def get_transcript(youtube_video: YouTube) -> str:
@@ -166,7 +80,11 @@ def get_transcript(youtube_video: YouTube) -> str:
 
 def fetch_transcript(youtube_video: YouTube) -> Result:
     """Fetches the transcript and returns the result."""
-    return youtube_cheatsheet.transcript.get_transcript(youtube_video.video_id)
+    return maybe_to_result(
+        Maybe.from_optional(
+            youtube_cheatsheet.transcript.get_transcript(youtube_video.video_id)
+        )
+    )
 
 
 def handle_result(result: Result, youtube_video: YouTube) -> str:

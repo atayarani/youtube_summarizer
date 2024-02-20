@@ -2,8 +2,16 @@ FROM python:3.10-bookworm
 
 USER root
 
-RUN apt-get update && apt-get install --no-install-recommends -y glibc-source=2.36-9+deb12u4 wget &&\
-    adduser nonroot && mkdir -p /home/nonroot && chown -R nonroot /home/nonroot 
+RUN echo "deb http://deb.debian.org/debian bookworm main contrib" > /etc/apt/sources.list.d/debian.source &&\
+    echo "deb-src http://deb.debian.org/debian bookworm main contrib" >> /etc/apt/sources.list.d/debian.source &&\
+    apt-get update &&\
+    apt-get install --no-install-recommends -y glibc-source=2.36-9+deb12u4 wget=1.21.3-1+b2 fonts-firacode &&\
+    adduser nonroot &&\
+    mkdir -p /home/nonroot &&\
+    chown -R nonroot /home/nonroot &&\
+    apt-get clean &&\
+    rm -rf /var/lib/apt/lists/* &&\
+    sh -c "curl https://get.trunk.io -fsSL | bash -s -- -y" && chmod 0755 /usr/local/bin/trunk
 
 
 USER nonroot
