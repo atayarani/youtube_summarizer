@@ -10,7 +10,7 @@ import youtube_cheatsheet.exceptions
 
 class YouTubeData:
     def __init__(self) -> None:
-        self._video: pytube.YouTube | None = None
+        self.video: pytube.YouTube | None = None
         self._metadata: dict | None = None
 
     def get_from_url(self, url: str) -> pytube.YouTube:

@@ -226,10 +226,7 @@ class TestMain:
             mock_youtube_data, Success("Transcript")
         )
 
-    def test_handle_transcript_generation_failure(self, mocker):
-        mock_youtube_data = mocker.Mock(
-            spec=youtube_cheatsheet.youtube_data.YouTubeData()
-        )
+    def test_handle_transcript_generation_failure(self, mocker, mock_youtube_data):
         mock_youtube_data.get_from_url.return_value = "YouTube Data"
         mock_generate_transcript = mocker.patch(
             "youtube_cheatsheet.transcript.generate_transcript"

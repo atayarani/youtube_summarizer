@@ -32,7 +32,7 @@ class TestGetTranscript:
         mock_transcript_api = mocker.patch(
             "youtube_transcript_api.YouTubeTranscriptApi"
         )
-        # mock_transcript_api.get_transcript.side_effect = None
+
         mock_transcript_api.get_transcript.return_value = [
             {"text": "bar"},
             {"text": "baz"},

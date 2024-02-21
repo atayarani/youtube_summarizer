@@ -4,6 +4,7 @@ import pytest
 from youtube_cheatsheet.exceptions import (
     NoTranscriptFoundError,
     TranscriptsDisabledError,
+    OutputPathValidationError
 )
 
 
@@ -39,3 +40,7 @@ class TestTranscriptsDisabled:
         """
         with pytest.raises(TranscriptsDisabledError, match="Transcripts disabled"):
             raise TranscriptsDisabledError()
+
+def test_output_path_validation_error():
+    with pytest.raises(OutputPathValidationError, match="Output path validation error"):
+        raise OutputPathValidationError()

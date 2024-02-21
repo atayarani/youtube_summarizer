@@ -1,64 +1,115 @@
-# import pytest
-# import pytube
-# from youtube_cheatsheet.youtube_data import get_from_url
+from datetime import datetime
+import pytest
+import pytube
+from youtube_cheatsheet import youtube_data
+import youtube_cheatsheet.exceptions
+from youtube_cheatsheet.youtube_data import YouTubeData
 
 
-# @pytest.fixture()
-# def url():
-#     """
-#     Returns the method URL.
-
-#     :returns: The method URL.
-
-#     Example:
-#     :rtype: str
-
-#     >>> url()
-#         'https://www.youtube.com/watch?v=12345'
-#     """
-#     return "https://www.youtube.com/watch?v=12345"
+@pytest.fixture()
+def valid_url(mock_valid_video_object):
+    return mock_valid_video_object.watch_url
 
 
-# def test_get_youtube_data_from_url_success(mocker, url):
-#     """
-#     Test the get_youtube_data_from_url function.
-
-#     :param mocker: The mocker object used for mocking pytube
-#     :param url: The YouTube URL from which to fetch data
-
-#     Example Usage:
-#     mocker = pytest.mock.Mock()
-#     test_get_youtube_data_from_url_success(mocker, "https://www.youtube.com/watch?v=VIDEO_ID")
-
-#     """
-#     mock_video = mocker.patch("pytube.YouTube")
-#     mock_avail = mock_video.return_value.check_availability
-
-#     result, value = get_from_url(url)
-
-#     assert result == 0
-#     assert value == mock_video.return_value
-#     mock_avail.assert_called_once()
+@pytest.fixture()
+def invalid_url():
+    return "https://www.youtube.com/watch?v=foo"
 
 
-# def test_get_youtube_data_from_url_fail(mocker, url):
-#     """
-#     Test the get_youtube_data_from_url function.
+@pytest.fixture()
+def mock_valid_video_object(mocker):
+    mock_video = mocker.Mock(spec=pytube.YouTube)
+    mock_video.title = "Test Title"
+    mock_video.publish_date = datetime(2022, 1, 1)
+    mock_video.author = "Test Author"
+    mock_video.watch_url = "https://www.youtube.com/watch?v=12345"
+    mock_video.description = "Test Description"
+    mock_video.video_id = "12345"
 
-#     :param mocker: The mocker object used for mocking pytube
-#     :param url: The YouTube URL from which to fetch data
+    return mock_video
 
-#     Example Usage:
-#     mocker = pytest.mock.Mock()
-#     test_get_youtube_data_from_url_fail(mocker, "https://www.youtube.com/watch?v=VIDEO_ID")
+class TestGetFromURL:
 
-#     """
-#     mock_video = mocker.patch("pytube.YouTube")
-#     mock_video.side_effect = pytube.exceptions.RegexMatchError(
-#         "video_id", r"watch\?v=\S+"
-#     )
+    def test_valid_url_returns_youtube_object(self, mocker, valid_url):
+        """Return a pytube.YouTube object when given a valid URL."""
+        youtube_data = YouTubeData()
+        mocker.patch("pytube.YouTube", return_value=mocker.MagicMock())
+        video = youtube_data.get_from_url(valid_url)
+        assert isinstance(video, mocker.MagicMock)
 
-#     result, value = get_from_url(url)
 
-#     assert result == 1
-#     assert value == "Invalid YouTube URL"
+    def test_invalid_url_raises_invalid_url_error(self, invalid_url):
+        """Raise an InvalidURLError when given an invalid URL."""
+        youtube_data = YouTubeData()
+        with pytest.raises(youtube_cheatsheet.exceptions.InvalidURLError):
+            youtube_data.get_from_url(invalid_url)
+
+
+class TestMetadataProperty:
+    def test_valid_video_metadata(self, mocker, mock_valid_video_object):
+        # Initialize the YouTubeData object
+        youtube_data = YouTubeData()
+        expected_keys = [
+            "title",
+            "publish_date",
+            "author",
+            "url",
+            "description",
+            "video_id",
+        ]
+        mocker.patch.object(
+            youtube_data, "_validate_video", return_value=mock_valid_video_object
+        )
+
+        metadata = youtube_data.metadata
+
+        assert isinstance(metadata, dict)
+        assert all(key in metadata for key in expected_keys)
+
+
+    def test_missing_metadata_error_when_video_is_none(self,mocker):
+        youtube_data = YouTubeData()
+        mocker.patch.object(youtube_data, "_validate_video", return_value=None)
+
+        assert isinstance(
+            youtube_data.metadata, youtube_cheatsheet.exceptions.MissingMetadataError
+        )
+
+class TestMetadataString:
+    def test_metadata_string_success(self,mocker, mock_valid_video_object):
+        youtube_data = YouTubeData()
+        mocker.patch.object(
+            youtube_data, "_validate_video", return_value=mock_valid_video_object
+        )
+
+        youtube_data.metadata
+        metadata_string = youtube_data.metadata_string(True)
+        assert isinstance(metadata_string, str)
+
+    def test_metadata_string_failure(self,mocker):
+        youtube_data = YouTubeData()
+        mocker.patch.object(
+            youtube_data, "_validate_video", return_value=None
+        )
+
+        youtube_data.metadata
+        metadata_string = youtube_data.metadata_string(True)
+        assert metadata_string is None
+
+class TestValidateVideo:
+    def test_validate_video_video_none(self):
+        youtube_data = YouTubeData()
+        youtube_data.video = None
+
+        assert youtube_data._validate_video() is None
+
+    def test_validate_video_video_title_none(self, mock_valid_video_object):
+        youtube_data = YouTubeData()
+        youtube_data.video = mock_valid_video_object
+        youtube_data.video.title = None
+        assert youtube_data._validate_video() is None
+    
+    def test_validate_video_return_video_object(self, mocker, mock_valid_video_object):
+        youtube_data = YouTubeData()
+        youtube_data.video = mock_valid_video_object
+        assert isinstance(youtube_data._validate_video(), pytube.YouTube)
