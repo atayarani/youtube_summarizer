@@ -1,7 +1,7 @@
 from datetime import datetime
+
 import pytest
 import pytube
-from youtube_cheatsheet import youtube_data
 import youtube_cheatsheet.exceptions
 from youtube_cheatsheet.youtube_data import YouTubeData
 
@@ -28,15 +28,14 @@ def mock_valid_video_object(mocker):
 
     return mock_video
 
-class TestGetFromURL:
 
+class TestGetFromURL:
     def test_valid_url_returns_youtube_object(self, mocker, valid_url):
         """Return a pytube.YouTube object when given a valid URL."""
         youtube_data = YouTubeData()
         mocker.patch("pytube.YouTube", return_value=mocker.MagicMock())
         video = youtube_data.get_from_url(valid_url)
         assert isinstance(video, mocker.MagicMock)
-
 
     def test_invalid_url_raises_invalid_url_error(self, invalid_url):
         """Raise an InvalidURLError when given an invalid URL."""
@@ -66,8 +65,7 @@ class TestMetadataProperty:
         assert isinstance(metadata, dict)
         assert all(key in metadata for key in expected_keys)
 
-
-    def test_missing_metadata_error_when_video_is_none(self,mocker):
+    def test_missing_metadata_error_when_video_is_none(self, mocker):
         youtube_data = YouTubeData()
         mocker.patch.object(youtube_data, "_validate_video", return_value=None)
 
@@ -75,26 +73,26 @@ class TestMetadataProperty:
             youtube_data.metadata, youtube_cheatsheet.exceptions.MissingMetadataError
         )
 
+
 class TestMetadataString:
-    def test_metadata_string_success(self,mocker, mock_valid_video_object):
+    def test_metadata_string_success(self, mocker, mock_valid_video_object):
         youtube_data = YouTubeData()
         mocker.patch.object(
             youtube_data, "_validate_video", return_value=mock_valid_video_object
         )
 
-        youtube_data.metadata
+        youtube_data._metadata = youtube_data.metadata
         metadata_string = youtube_data.metadata_string(True)
         assert isinstance(metadata_string, str)
 
-    def test_metadata_string_failure(self,mocker):
+    def test_metadata_string_failure(self, mocker):
         youtube_data = YouTubeData()
-        mocker.patch.object(
-            youtube_data, "_validate_video", return_value=None
-        )
+        mocker.patch.object(youtube_data, "_validate_video", return_value=None)
 
-        youtube_data.metadata
+        youtube_data._metadata = youtube_data.metadata
         metadata_string = youtube_data.metadata_string(True)
         assert metadata_string is None
+
 
 class TestValidateVideo:
     def test_validate_video_video_none(self):
@@ -108,8 +106,8 @@ class TestValidateVideo:
         youtube_data.video = mock_valid_video_object
         youtube_data.video.title = None
         assert youtube_data._validate_video() is None
-    
-    def test_validate_video_return_video_object(self, mocker, mock_valid_video_object):
+
+    def test_validate_video_return_video_object(self, mock_valid_video_object):
         youtube_data = YouTubeData()
         youtube_data.video = mock_valid_video_object
         assert isinstance(youtube_data._validate_video(), pytube.YouTube)
