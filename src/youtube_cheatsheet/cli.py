@@ -1,5 +1,5 @@
 import pathlib
-from typing import Annotated, NoReturn, Optional
+from typing import Annotated, Optional
 
 import typer
 from returns.pipeline import flow

@@ -5,4 +5,5 @@ extend = "../ruff.toml"
 extend-ignore = [
   "ARG001", # ignore errors with unused function params
   "ARG002", # ignore errors with unused method params
+  "SLF001"
 ]

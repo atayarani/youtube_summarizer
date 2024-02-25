@@ -61,7 +61,7 @@ def split(transcript: str) -> list[str] | youtube_cheatsheet.exceptions.Transcri
         case 1:
             return [transcript]
         case _:
-            return [chunk for chunk in chunks]
+            return list(chunk for chunk in chunks)
 
 
 def handle_result(result: Result[str, None], youtube_video: YouTube) -> str:
