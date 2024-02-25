@@ -29,6 +29,7 @@ class YouTubeData:
     def metadata(
         self,
     ) -> dict[str, str | None] | youtube_cheatsheet.exceptions.MissingMetadataError:
+        """Get the metadata of the YouTube video."""
         video = self._validate_video()
         if video is None:
             return youtube_cheatsheet.exceptions.MissingMetadataError()
@@ -45,6 +46,7 @@ class YouTubeData:
         }
 
     def metadata_string(self, add_metadata: bool) -> str | None:
+        """Return a formatted string representation of the metadata information."""
         metadata_info = self._validate_metadata()
         return (
             Maybe.from_optional(Some if add_metadata else Nothing)

@@ -1,5 +1,5 @@
 import pathlib
-from typing import Annotated, Optional
+from typing import Annotated, NoReturn, Optional
 
 import typer
 from returns.pipeline import flow
@@ -39,11 +39,19 @@ def main(
     transcript_chunks = flow(
         youtube_video.get_from_url(url),
         lambda video: youtube_cheatsheet.transcript.set_transcript_pipe(video),
-        youtube_cheatsheet.transcript.split_transcript,
+        youtube_cheatsheet.transcript.split,
     )
     metadata_info = youtube_video.metadata
     if isinstance(metadata_info, youtube_cheatsheet.exceptions.MissingMetadataError):
         print(repr(metadata_info))
+        exit(1)
+    
+    if isinstance(transcript_chunks, youtube_cheatsheet.exceptions.TranscriptSplitError):
+        print(repr(transcript_chunks))
+        exit(1)
+
+    if metadata_info["title"] is None:
+        print("Metadata is missing title")
         exit(1)
 
     # We pass the boolean values to the methods here, so we don't generate them
@@ -52,7 +60,7 @@ def main(
     # no good reason.
     flow(
         youtube_cheatsheet.output.get_output(
-            metadata_info["title"],  # type: ignore
+            metadata_info["title"],  
             youtube_data_metadata=youtube_video.metadata_string(metadata),
             output_takeaways=youtube_cheatsheet.ai_providers.openai.get_takeaways(
                 takeaways, transcript_chunks

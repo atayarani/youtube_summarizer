@@ -46,7 +46,7 @@ def set_transcript_pipe(youtube_video: YouTube) -> str:
     )
 
 
-def split(transcript: str) -> tuple[int, tuple[str, ...]]:
+def split(transcript: str) -> list[str] | youtube_cheatsheet.exceptions.TranscriptSplitError:
     chunks = flow(
         CharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=10000,
@@ -57,11 +57,11 @@ def split(transcript: str) -> tuple[int, tuple[str, ...]]:
 
     match len(chunks):
         case 0:
-            return 1, ("The transcript must be specified.",)
+            return youtube_cheatsheet.exceptions.TranscriptSplitError()
         case 1:
-            return 0, (transcript,)
+            return [transcript]
         case _:
-            return 0, tuple(chunk for chunk in chunks)
+            return [chunk for chunk in chunks]
 
 
 def handle_result(result: Result[str, None], youtube_video: YouTube) -> str:
@@ -88,13 +88,13 @@ def handle_transcript_generation(youtube_video: YouTube, result: Result) -> str:
     return generate_result.unwrap()
 
 
-def split_transcript(transcript: str) -> tuple[str, ...]:
-    """
-    Split a transcript into multiple parts.
+# def split_transcript(transcript: str) -> tuple[str, ...]:
+#     """
+#     Split a transcript into multiple parts.
 
-    """
-    result, value = youtube_cheatsheet.transcript.split(transcript)
-    if result == 1:
-        raise youtube_cheatsheet.exceptions.TranscriptSplitError()
+#     """
+#     result, value = youtube_cheatsheet.transcript.split(transcript)
+#     if result == 1:
+#         raise youtube_cheatsheet.exceptions.TranscriptSplitError()
 
-    return value
+#     return value

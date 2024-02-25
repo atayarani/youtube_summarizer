@@ -12,15 +12,15 @@ def chat_stream(
     system_message: SystemMessage,
     model: str = "gpt-3.5-turbo-0125",
     temperature: float = 0.0,
-    transcript_chunks: tuple[str, ...] = (),
+    transcript_chunks: list[str] | None = None,
     index: int = 0,
     result: str = "",
 ) -> str:
     validate_inputs(system_message, model)
-    if index == len(transcript_chunks):
+    if index == len(transcript_chunks): # type: ignore
         return result
 
-    messages = [system_message, HumanMessage(content=transcript_chunks[index])]
+    messages = [system_message, HumanMessage(content=transcript_chunks[index])] # type: ignore
     chat = langchain_openai.ChatOpenAI(temperature=temperature, model=model)
 
     return chat_stream(
@@ -42,7 +42,7 @@ def validate_inputs(system_message: SystemMessage, model: str) -> None:
         raise youtube_cheatsheet.exceptions.InvalidSystemMessageError()
 
 
-def get_takeaways(takeaways: bool, transcript_chunks: tuple[str, ...]) -> str | None:
+def get_takeaways(takeaways: bool, transcript_chunks: list[str]) -> str | None:
     takeaways_message = SystemMessage(
         content="The user will provide a transcript. From the transcript, you will provide a bulleted list of key takeaways."
     )
@@ -57,7 +57,7 @@ def get_takeaways(takeaways: bool, transcript_chunks: tuple[str, ...]) -> str | 
     )
 
 
-def get_summary(summary: bool, transcript_chunks: tuple[str, ...]) -> str | None:
+def get_summary(summary: bool, transcript_chunks: list[str]) -> str | None:
     summary_message = SystemMessage(
         content=(
             "The user will provide a transcript."
