@@ -149,6 +149,7 @@ requests==2.31.0
     # via youtube-transcript-api
     # via yt-dlp
 returns==0.22.0
+    # via returns
     # via youtube-cheatsheet
 rich==13.7.0
     # via youtube-cheatsheet
@@ -171,7 +172,7 @@ tomli==2.0.1
     # via mypy
 toolz==0.12.1
     # via youtube-cheatsheet
-tox-rye @ git+https://github.com/bluss/tox-rye@d1348e996d642e947cd0fb158ecdbcfe0f386af3
+tox-rye @ git+https://github.com/bluss/tox-rye@0.3.0
     # via youtube-cheatsheet
 tqdm==4.66.2
     # via openai
@@ -195,7 +196,7 @@ urllib3==2.2.0
     # via yt-dlp
 virtualenv==20.25.0
     # via virtualenv-rye-discovery
-virtualenv-rye-discovery @ git+https://github.com/bluss/virtualenv-rye-discovery@4958f87a8fef73a1dddbb02fa3a98c93bab48377
+virtualenv-rye-discovery @ git+https://github.com/bluss/virtualenv-rye-discovery@0.3.0
     # via tox-rye
     # via youtube-cheatsheet
 websockets==12.0

@@ -2,14 +2,14 @@
 # To learn more about the format of this file, see https://docs.trunk.io/reference/trunk-yaml
 version: 0.1
 cli:
-  version: 1.20.0
+  version: 1.20.1
   sha256:
-    darwin_arm64: 2e13a3af548d1971769634316ae156da8d74d048cb200c2a6c15192d0ebbf852
-    darwin_x86_64: 0ee3e92b14f4021d1a8c376e56d7f3dccb63a5e145e72aa0d7e74818508d8794
-    linux_arm64: 2827a2e57d0f7469c3938c48d908dfb0660304a411bb35d8c9b755470e6b07ff
-    linux_x86_64: b7c27fb4f7e8dc086508e0e7aee827341255521fef8311dc53dbc95be889321b
-    mingw_x86_64: 7179323ac33240d8c21cce9185ceb7b062b5b743482f309915e3b8da5990b55f
-    windows_x86_64: 40b3fbe95b499559ca5b206cb811bf7ca1118bf95527a6b3d36973bc821efd64
+    darwin_arm64: ccf460a7f4357ac0a2750bc3e1a602ae41ee342bc7fa7b22c1cdf3046aecacff
+    darwin_x86_64: 91743ec926223583ad42b3951e79a57e3d85d2d398a78b97bcf09b83e3774a7f
+    linux_arm64: eae75b5212644238dbcf747d9974bef58068d5b4240dcd8c1234d452f417779e
+    linux_x86_64: 9a32c464da3d7d5dc3e4254ea28fd4130539d8e92665d22649bd01b670fe2cab
+    mingw_x86_64: 40e31a59f49974d270ede5a4d57c4b7bc671d01b3676c72b1463d4e76434a4db
+    windows_x86_64: 1dd4f633dccbea2b7854ca62e2faff9a08af48a2964171c0a5839991cda5e971
 # Trunk provides extensibility via plugins. (https://docs.trunk.io/plugins)
 plugins:
   sources:
@@ -25,7 +25,6 @@ runtimes:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
-    - hadolint@2.12.0
     - trunk-toolbox@0.2.0
     - pre-commit-hooks@4.5.0:
         commands:
@@ -38,7 +37,7 @@ lint:
           - types-python-slugify
     - actionlint@1.6.26
     - bandit@1.7.7
-    - checkov@3.2.22
+    - checkov@3.2.24
     - git-diff-check
     - markdownlint@0.39.0
     - prettier@3.2.5
@@ -47,9 +46,10 @@ lint:
     - shfmt@3.6.0
     - taplo@0.8.1
     - trivy@0.49.1
-    - trufflehog@3.67.6
+    - trufflehog@3.68.0
     - yamllint@1.35.1
   disabled:
+    - hadolint
     - terrascan
     - black
     - isort

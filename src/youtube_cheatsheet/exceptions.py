@@ -16,6 +16,15 @@ class TranscriptsDisabledError(Exception):
         super().__init__("Transcripts disabled")
 
 
+class TranscriptSplitError(Exception):
+    """
+    An exception that is raised when transcripts are disabled.
+    """
+
+    def __init__(self) -> None:
+        super().__init__("Transcript must be specified")
+
+
 class TranscriptGenerationFailedError(Exception):
     """
     An exception that is raised when the generation of a transcript fails.

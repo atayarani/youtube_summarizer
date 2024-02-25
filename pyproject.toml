@@ -45,7 +45,31 @@ exclude_dirs = ["tests"]
 show_missing = true
 skip_covered = true
 skip_empty = true
-exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:"]
+exclude_also = [
+  # Don't complain about missing debug-only code:
+  "def __repr__",
+  "if self\\.debug",
+
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
+
+  # Don't complain if non-runnable code isn't run:
+  "if 0:",
+  "if __name__ == .__main__.:",
+
+  # Don't complain about abstract methods, they aren't run:
+  "@(abc\\.)?abstractmethod",
+  "@app.*",
+  "set_transcript_pipe",
+  "fetch_youtube_audio",
+]
+
+[tool.coverage.run]
+omit = [
+  "./src/youtube_cheatsheet/cli.py",
+  "./src/youtube_cheatsheet/exceptions.py",
+]
 
 [tool.hatch.build.targets.sdist]
 include = ["src"]

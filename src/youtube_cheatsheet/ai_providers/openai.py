@@ -60,7 +60,9 @@ def get_takeaways(takeaways: bool, transcript_chunks: tuple[str, ...]) -> str | 
 def get_summary(summary: bool, transcript_chunks: tuple[str, ...]) -> str | None:
     summary_message = SystemMessage(
         content=(
-            "The user will provide a transcript. Reformat the transcript into an in-depth markdown blog post using sections and section headers."
+            "The user will provide a transcript."
+            "Reformat the transcript into an in-depth markdown blog post using sections and section headers."
+            "The top level heading should be ###."
         )
     )
     return (

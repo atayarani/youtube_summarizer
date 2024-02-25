@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 import pytube
 import youtube_cheatsheet.exceptions
-from youtube_cheatsheet.youtube_data import YouTubeData
+from youtube_cheatsheet.video_providers.youtube.data import YouTubeData
 
 
 @pytest.fixture()

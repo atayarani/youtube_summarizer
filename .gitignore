@@ -164,3 +164,4 @@ cython_debug/
 results/pytest.xml
 
 report
+.ruff_cache

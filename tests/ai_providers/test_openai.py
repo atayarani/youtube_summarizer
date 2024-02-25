@@ -5,13 +5,12 @@ import youtube_cheatsheet.ai_providers.openai
 import youtube_cheatsheet.exceptions
 from langchain_core.messages import SystemMessage
 from pytest_mock import MockerFixture
-from returns.result import Success
+from returns.result import Failure, Success
 from youtube_cheatsheet.ai_providers.openai import (
     ai_content,
     get_summary,
     get_takeaways,
 )
-from returns.result import Failure
 
 
 @pytest.fixture()

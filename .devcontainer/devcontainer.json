@@ -6,6 +6,9 @@
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postStartCommand": "rye sync",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
   "customizations": {
     "vscode": {
       "extensions": [
@@ -13,6 +16,7 @@
         "ms-python.python",
         "Codium.codium",
         "tamasfe.even-better-toml",
+        "matangover.mypy",
         "trunk.io"
       ],
       "settings": {

@@ -1,18 +1,17 @@
 import pathlib
 
-import slugify
-from jinja2 import Environment, PackageLoader, Template
+import pytube.helpers
+from jinja2 import BaseLoader, Environment, PackageLoader, Template
 
 import youtube_cheatsheet.exceptions
-import pytube.helpers
-# import pytube.helpers.safe_filename
 
 
 def setup_jinja_env() -> Environment:
-    return Environment(
-        loader=PackageLoader("youtube_cheatsheet"),
-        autoescape=True,
-    )
+    return Environment(loader=jinja_loader(), autoescape=True)
+
+
+def jinja_loader() -> BaseLoader:
+    return PackageLoader("youtube_cheatsheet")
 
 
 def get_template(env: Environment, template_name: str = "output.md.j2") -> Template:
