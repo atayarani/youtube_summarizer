@@ -22,7 +22,7 @@ class TestNoTranscriptFound:
 
         """
         with pytest.raises(NoTranscriptFoundError):
-            raise NoTranscriptFoundError()
+            raise NoTranscriptFoundError
 
 
 class TestTranscriptsDisabled:
@@ -39,9 +39,9 @@ class TestTranscriptsDisabled:
 
         """
         with pytest.raises(TranscriptsDisabledError, match="Transcripts disabled"):
-            raise TranscriptsDisabledError()
+            raise TranscriptsDisabledError
 
 
 def test_output_path_validation_error():
     with pytest.raises(OutputPathValidationError, match="Output path validation error"):
-        raise OutputPathValidationError()
+        raise OutputPathValidationError

@@ -25,6 +25,7 @@ runtimes:
 # This is the section where you manage your linters. (https://docs.trunk.io/check/configuration)
 lint:
   enabled:
+    - trufflehog-git@3.68.0
     - trunk-toolbox@0.2.0
     - pre-commit-hooks@4.5.0:
         commands:
@@ -62,7 +63,11 @@ lint:
       paths: [LICENSE.md]
 actions:
   enabled:
+    - trufflehog-pre-commit
     - trunk-announce
     - trunk-check-pre-push
     - trunk-fmt-pre-commit
     - trunk-upgrade-available
+tools:
+  enabled:
+    - act@0.2.59

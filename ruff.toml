@@ -22,11 +22,15 @@ extend-select = [
   "TRY",  # tryceratops
   "UP",   # pyupgrade
   "ERA",  # eradicate,
-  "PIE", # flake8-pie
-  "T20", # flake8-print
-  "Q", # flake8-quotes
-  "RSE", # flake8-raise
-  "SLF", "SLOT", "TID", "TCH","LOG"
+  "PIE",  # flake8-pie
+  "T20",  # flake8-print
+  "Q",    # flake8-quotes
+  "RSE",  # flake8-raise
+  "SLF",
+  "SLOT",
+  "TID",
+  "TCH",
+  "LOG",
 ]
 ignore = [
   "D100",   # Missing docstring in public module
@@ -35,6 +39,7 @@ ignore = [
   "D212",   # Multi-line docstring summary should start at the first line
   "S101",   # Use of assert detected
   "TRY003", # Avoid specifying long messages outside the exception class
+  "C416",   # Unnecessary `list` comprehension (rewrite using `list()`)
 ]
 mccabe = { max-complexity = 5 }
 pydocstyle = { convention = "google" }

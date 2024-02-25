@@ -45,7 +45,7 @@ def write_file(title: str, content: str, path: pathlib.Path) -> None:
     file = create_file_path(pytube.helpers.safe_filename(title), path)
 
     if not validate_output_path(file, path):
-        raise youtube_cheatsheet.exceptions.OutputPathValidationError()
+        raise youtube_cheatsheet.exceptions.OutputPathValidationError
 
     file.write_text(content)
 

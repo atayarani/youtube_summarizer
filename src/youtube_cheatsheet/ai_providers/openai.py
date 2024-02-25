@@ -17,10 +17,10 @@ def chat_stream(
     result: str = "",
 ) -> str:
     validate_inputs(system_message, model)
-    if index == len(transcript_chunks): # type: ignore
+    if index == len(transcript_chunks):  # type: ignore
         return result
 
-    messages = [system_message, HumanMessage(content=transcript_chunks[index])] # type: ignore
+    messages = [system_message, HumanMessage(content=transcript_chunks[index])]  # type: ignore
     chat = langchain_openai.ChatOpenAI(temperature=temperature, model=model)
 
     return chat_stream(
@@ -35,11 +35,11 @@ def chat_stream(
 
 def validate_inputs(system_message: SystemMessage, model: str) -> None:
     if model == "":
-        raise youtube_cheatsheet.exceptions.InvalidModelError()
+        raise youtube_cheatsheet.exceptions.InvalidModelError
     if "OPENAI_API_KEY" not in os.environ:
-        raise youtube_cheatsheet.exceptions.OpenAIKeyError()
+        raise youtube_cheatsheet.exceptions.OpenAIKeyError
     if system_message.content == "":
-        raise youtube_cheatsheet.exceptions.InvalidSystemMessageError()
+        raise youtube_cheatsheet.exceptions.InvalidSystemMessageError
 
 
 def get_takeaways(takeaways: bool, transcript_chunks: list[str]) -> str | None:

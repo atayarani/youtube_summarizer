@@ -1,3 +1,4 @@
+import logging
 import pathlib
 from typing import Annotated, Optional
 
@@ -35,6 +36,9 @@ def main(
     """
     Process YouTube videos and write the output to a file or stdout.
     """
+    # configure logging
+    logging.basicConfig(level=logging.INFO)
+
     youtube_video = youtube_cheatsheet.video_providers.youtube.data.YouTubeData()
     transcript_chunks = flow(
         youtube_video.get_from_url(url),
@@ -43,15 +47,17 @@ def main(
     )
     metadata_info = youtube_video.metadata
     if isinstance(metadata_info, youtube_cheatsheet.exceptions.MissingMetadataError):
-        print(repr(metadata_info))
+        logging.critical(repr(metadata_info))
         exit(1)
-    
-    if isinstance(transcript_chunks, youtube_cheatsheet.exceptions.TranscriptSplitError):
-        print(repr(transcript_chunks))
+
+    if isinstance(
+        transcript_chunks, youtube_cheatsheet.exceptions.TranscriptSplitError
+    ):
+        logging.critical(repr(transcript_chunks))
         exit(1)
 
     if metadata_info["title"] is None:
-        print("Metadata is missing title")
+        logging.critical("Metadata is missing title")
         exit(1)
 
     # We pass the boolean values to the methods here, so we don't generate them
@@ -60,7 +66,7 @@ def main(
     # no good reason.
     flow(
         youtube_cheatsheet.output.get_output(
-            metadata_info["title"],  
+            metadata_info["title"],
             youtube_data_metadata=youtube_video.metadata_string(metadata),
             output_takeaways=youtube_cheatsheet.ai_providers.openai.get_takeaways(
                 takeaways, transcript_chunks

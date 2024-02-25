@@ -1,4 +1,4 @@
-from sys import stderr
+import logging
 
 import youtube_transcript_api
 from langchain.text_splitter import CharacterTextSplitter
@@ -46,7 +46,9 @@ def set_transcript_pipe(youtube_video: YouTube) -> str:
     )
 
 
-def split(transcript: str) -> list[str] | youtube_cheatsheet.exceptions.TranscriptSplitError:
+def split(
+    transcript: str,
+) -> list[str] | youtube_cheatsheet.exceptions.TranscriptSplitError:
     chunks = flow(
         CharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=10000,
@@ -61,7 +63,7 @@ def split(transcript: str) -> list[str] | youtube_cheatsheet.exceptions.Transcri
         case 1:
             return [transcript]
         case _:
-            return list(chunk for chunk in chunks)
+            return [chunk for chunk in chunks]
 
 
 def handle_result(result: Result[str, None], youtube_video: YouTube) -> str:
@@ -70,7 +72,7 @@ def handle_result(result: Result[str, None], youtube_video: YouTube) -> str:
         case Success():
             return result.unwrap()
         case Failure():
-            print("No transcript found", file=stderr)
+            logging.error("No transcript found")
             return handle_transcript_generation(youtube_video, result)
         case _:
             raise NotImplementedError(f"Unhandled result: {result}")
