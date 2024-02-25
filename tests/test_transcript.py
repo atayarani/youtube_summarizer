@@ -1,4 +1,3 @@
-from datetime import datetime
 
 import pytest
 import pytube
@@ -10,18 +9,6 @@ from youtube_cheatsheet.transcript import (
     handle_result,
     split,
 )
-
-
-def mock_valid_video_object(mocker):
-    mock_video = mocker.Mock(spec=pytube.YouTube)
-    mock_video.title = "Test Title"
-    mock_video.publish_date = datetime(2022, 1, 1)
-    mock_video.author = "Test Author"
-    mock_video.watch_url = "https://www.youtube.com/watch?v=12345"
-    mock_video.description = "Test Description"
-    mock_video.video_id = "12345"
-
-    return mock_video
 
 
 @pytest.fixture()
@@ -123,65 +110,28 @@ class TestGetTranscript:
                 mock_youtube_data, Failure("Transcript")
             )
 
-    def test_function_fails_with_zero_chunks(self, mocker):
-        """
-        Test that the function fails with zero chunks.
-
-        Args:
-            mocker: The mocker object from the pytest-mock library.
-
-        Raises:
-            ValueError: If the function fails to split the transcript into any chunks.
-        """
-        mock_transcript_split = mocker.patch("youtube_cheatsheet.transcript.split")
-        mock_transcript_split.return_value = (1, ())
-
-        with pytest.raises(youtube_cheatsheet.exceptions.TranscriptSplitError):
-            youtube_cheatsheet.transcript.split_transcript("")
-
-    def test_function_succeeds_with_two_chunks(self, mocker):
-        mock_transcript_split = mocker.patch("youtube_cheatsheet.transcript.split")
-        mock_transcript_split.return_value = (0, ("foo", "bar"))
-
-        assert youtube_cheatsheet.transcript.split_transcript("") == ("foo", "bar")
-
-    def test_function_succeeds_with_one_chunk(self, mocker):
-        mock_transcript_split = mocker.patch("youtube_cheatsheet.transcript.split")
-        mock_transcript_split.return_value = (0, ("foo",))
-
-        assert youtube_cheatsheet.transcript.split_transcript("") == ("foo",)
-
 
 class TestSplit:
     @pytest.mark.parametrize(
-        ("split_test_return_value", "input", "expected_result", "expected_value"),
+        ("split_test_return_value", "input", "expected_value"),
         [
             pytest.param(
-                ["foo bar"], "foo bar", 0, ("foo bar",), id="succeeds_with_one_chunk"
+                ["foo bar"], "foo bar", ["foo bar"], id="succeeds_with_one_chunk"
             ),
             pytest.param(
                 ["foo", "bar"],
                 "foo bar",
-                0,
-                ("foo", "bar"),
+                ["foo", "bar"],
                 id="succeeds_with_multiple_chunks",
-            ),
-            pytest.param(
-                [],
-                "",
-                1,
-                ("The transcript must be specified.",),
-                id="fails_with_empty_input",
             ),
         ],
     )
-    def test_function(
-        self, mocker, split_test_return_value, input, expected_result, expected_value
-    ):
+    def test_function(self, mocker, split_test_return_value, input, expected_value):
         mock_char_split = mocker.patch(
             "langchain.text_splitter.CharacterTextSplitter.from_tiktoken_encoder"
         )
         mock_char_split.return_value.split_text.return_value = split_test_return_value
-        result, value = split(input)
-        assert result == expected_result
-        assert value == expected_value
+        assert split(input) == expected_value
+
+    def test_function_returns_exception(self):
+        assert isinstance(split(""), youtube_cheatsheet.exceptions.TranscriptSplitError)

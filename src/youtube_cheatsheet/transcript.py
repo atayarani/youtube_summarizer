@@ -16,6 +16,12 @@ import youtube_cheatsheet.video_providers.youtube.audio
 
 
 def get_transcript(video_id: str) -> Result[str, None]:
+    """
+    This function retrieves the transcript for a YouTube video using the YouTubeTranscriptApi library. 
+
+    It takes a video_id as input and returns a Result object containing the transcript as a string or None 
+    if the transcript is not available.
+    """
     safe_function = functoolz.excepts(
         (
             youtube_transcript_api._errors.NoTranscriptFound,
@@ -38,6 +44,11 @@ def format_transcript(transcript: dict) -> list[str]:
 
 
 def set_transcript_pipe(youtube_video: YouTube) -> str:
+    """
+    This function takes a YouTube video object and retrieves the transcript
+    for the video using the 'get_transcript' function from the 'youtube_cheatsheet.transcript' module.
+    It then handles the result of the transcript fetch using the 'handle_result' function from the same module.
+    """
     return flow(
         youtube_cheatsheet.transcript.get_transcript(youtube_video.video_id),
         lambda result: youtube_cheatsheet.transcript.handle_result(
@@ -49,6 +60,7 @@ def set_transcript_pipe(youtube_video: YouTube) -> str:
 def split(
     transcript: str,
 ) -> list[str] | youtube_cheatsheet.exceptions.TranscriptSplitError:
+    """Split the given transcript into chunks."""
     chunks = flow(
         CharacterTextSplitter.from_tiktoken_encoder(
             chunk_size=10000,
@@ -88,15 +100,3 @@ def handle_transcript_generation(youtube_video: YouTube, result: Result) -> str:
             result.failure()
         )
     return generate_result.unwrap()
-
-
-# def split_transcript(transcript: str) -> tuple[str, ...]:
-#     """
-#     Split a transcript into multiple parts.
-
-#     """
-#     result, value = youtube_cheatsheet.transcript.split(transcript)
-#     if result == 1:
-#         raise youtube_cheatsheet.exceptions.TranscriptSplitError()
-
-#     return value

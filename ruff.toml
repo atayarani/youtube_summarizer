@@ -30,7 +30,7 @@ extend-select = [
   "SLOT",
   "TID",
   "TCH",
-  "LOG",
+  "LOG",  # flake8-logging
 ]
 ignore = [
   "D100",   # Missing docstring in public module
@@ -40,6 +40,12 @@ ignore = [
   "S101",   # Use of assert detected
   "TRY003", # Avoid specifying long messages outside the exception class
   "C416",   # Unnecessary `list` comprehension (rewrite using `list()`)
+  "T201",   # `print` found
 ]
 mccabe = { max-complexity = 5 }
 pydocstyle = { convention = "google" }
+
+[lint.flake8-self]
+ignore-names = [
+  "_errors", # no public methods to access exceptions in youtube_transcript_api
+]
