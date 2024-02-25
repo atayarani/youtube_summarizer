@@ -1,42 +1,114 @@
-[tool.poetry]
-name = "youtube-summarizer"
+[project]
+requires-python = ">=3.10"
+name = "youtube-cheatsheet"
 version = "0.3.0"
-description = ""
-authors = ["Ali <619512+atayarani@users.noreply.github.com>"]
+description = "A commandline application to summarize youtube videos"
+authors = [{ name = "atayarani" }]
 readme = "README.md"
-packages = [
-  {include = "src"},
-]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Environment :: Console",
-    "Natural Language :: English",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.10",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "License :: OSI Approved :: Apache Software License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-license = "MIT"
+license = { file = "LICENSE.md" }
+urls = { Homepage = "https://github.com/atayarani/youtube-summarizer" }
+keywords = ["summarization", "summarizer", "youtube-cheatsheet", "youtube"]
+dependencies = [
+  "assemblyai~=0.20.2",
+  "attrs~=23.2.0",
+  "jinja2~=3.1.3",
+  "langchain-openai~=0.0.2",
+  "langchain~=0.1.0",
+  "pydub~=0.25.1",
+  "python-slugify~=8.0.1",
+  "pytube~=15.0.0",
+  "returns[compatible-mypy]>=0.21.0",
+  "rich~=13.7.0",
+  "toolz>=0.12.1",
+  "tox-rye @ git+https://github.com/bluss/tox-rye@0.3.0",
+  "typer~=0.9.0",
+  "virtualenv-rye-discovery @ git+https://github.com/bluss/virtualenv-rye-discovery@0.3.0",
+  "youtube-transcript-api~=0.6.2",
+  "yt-dlp~=2023.12.30",
+]
 
-[tool.poetry.scripts]
-summarize = "src.cli:main"
+[tool.bandit]
+exclude_dirs = ["tests"]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-langchain = "^0.1.0"
-youtube-transcript-api = "^0.6.2"
-langchain-openai = "^0.0.2"
-pytube = "^15.0.0"
-click = "^8.1.7"
-python-slugify = "^8.0.1"
-attrs = "^23.2.0"
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+skip_empty = true
+exclude_also = [
+  # Don't complain about missing debug-only code:
+  "def __repr__",
+  "if self\\.debug",
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.4"
-black = {extras = ["d"], version = "^23.12.1"}
-isort = "^5.13.2"
-pytest-cov = "^4.1.0"
-pytest-mock = "^3.12.0"
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+  # Don't complain if non-runnable code isn't run:
+  "if 0:",
+  "if __name__ == .__main__.:",
+
+  # Don't complain about abstract methods, they aren't run:
+  "@(abc\\.)?abstractmethod",
+  "@app.*",
+  "set_transcript_pipe",
+  "fetch_youtube_audio",
+]
+
+[tool.coverage.run]
+omit = [
+  "./src/youtube_cheatsheet/cli.py",
+  "./src/youtube_cheatsheet/exceptions.py",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["src"]
+
+[tool.pytest.ini_options]
+addopts = ["--spec", "--cov=src", "--import-mode=importlib"]
+testpaths = ["tests"]
+
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+  # development
+  "pre-commit~=3.6.0",
+  "radon~=6.0.1",
+  "ruff-lsp>=0.0.52",
+  "ruff~=0.2.0",
+  "toml-sort>=0.23.1",
+  "types-python-slugify>=8.0.2.20240127",
+  # testing
+  "hypothesis[codemods]~=6.97.4",
+  "pytest-cov~=4.1.0",
+  "pytest-coverage>=0.0",
+  "pytest-mock~=3.12.0",
+  "pytest-ruff>=0.2.1",
+  "pytest-spec>=3.2.0",
+  "pytest~=7.4.4",
+  "tox>=4.13.0",
+  "tox-docker>=4.1.0",
+]
+
+[tool.rye.scripts]
+summarize = { call = "youtube_cheatsheet.cli:app" }
+testsuite = { cmd = [
+  "python",
+  "-mpytest",
+  "--junit-xml=./results/pytest.xml",
+  "--cov=./",
+  "--cov-report",
+  "xml",
+  "-v",
+] }

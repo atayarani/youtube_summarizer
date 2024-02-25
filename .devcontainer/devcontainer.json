@@ -1,0 +1,31 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+  "name": "Python 3",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postStartCommand": "rye sync",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "Codium.codium",
+        "tamasfe.even-better-toml",
+        "matangover.mypy",
+        "trunk.io"
+      ],
+      "settings": {
+        "editor.fontFamily": "Fira Code",
+        "editor.fontLigatures": "'calt', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'zero', 'onum'",
+        "python.analysis.typeCheckingMode": "off",
+        "python.analysis.inlayHints.functionReturnTypes": false,
+        "python.analysis.inlayHints.pytestParameters": false
+      }
+    }
+  }
+}

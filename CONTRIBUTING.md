@@ -6,20 +6,20 @@ Contributions are welcome! If you would like to contribute to this project, plea
 
 2. Create a new branch:
 
-    ```bash
-    git checkout -b feature/your-feature
-    ```
+   ```bash
+   git checkout -b feature/your-feature
+   ```
 
 3. Make your changes and commit them:
 
-    ```bash
-    git commit -m "Add your commit message"
-    ```
+   ```bash
+   git commit -m "Add your commit message"
+   ```
 
 4. Push to the branch:
 
-    ```bash
-    git push origin feature/your-feature
-    ```
+   ```bash
+   git push origin feature/your-feature
+   ```
 
 5. Open a pull request.

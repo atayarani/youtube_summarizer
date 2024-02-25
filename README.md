@@ -1,14 +1,15 @@
+# YouTube Summarizer
+
 [![Test Coverage](https://api.codeclimate.com/v1/badges/43056a39f0dc01e73314/test_coverage)](https://codeclimate.com/github/atayarani/youtube_summarizer/test_coverage)
 
 [![Maintainability](https://api.codeclimate.com/v1/badges/43056a39f0dc01e73314/maintainability)](https://codeclimate.com/github/atayarani/youtube_summarizer/maintainability)
-
-# YouTube Summarizer
 
 This is a codebase for a YouTube summarizer application.
 
 ## Description
 
-The YouTube Summarizer is a tool that allows users to summarize the content of YouTube videos. It uses natural language processing techniques to extract key information from the video and generate a concise summary.
+The YouTube Summarizer is a tool that allows users to summarize the content of YouTube videos. It uses natural language
+processing techniques to extract key information from the video and generate a concise summary.
 
 ## Features
 
@@ -19,6 +20,7 @@ The YouTube Summarizer is a tool that allows users to summarize the content of Y
 ## Installation
 
 1. Install the package:
+
 ```bash
 pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/youtube_summarizer/pypi/simple
 ```
@@ -27,9 +29,9 @@ pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/you
 
 1. Run the application:
 
-    ```bash
-    summarize
-    ```
+   ```bash
+   summarize
+   ```
 
 2. Enter the URL of the YouTube video you want to summarize.
 
@@ -40,5 +42,3 @@ pip install youtube-summarizer --index-url=https://packagecloud.io/atayarani/you
 ## License
 
 This project is licensed under the [MIT License](LICENSE.md).
-
-

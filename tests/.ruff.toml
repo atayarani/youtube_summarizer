@@ -1,0 +1,9 @@
+# Extend the `ruff.toml` file in the parent directory...
+extend = "../ruff.toml"
+
+[lint]
+extend-ignore = [
+  "ARG001", # ignore errors with unused function params
+  "ARG002", # ignore errors with unused method params
+  "SLF001",
+]
